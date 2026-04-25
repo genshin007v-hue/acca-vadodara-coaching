@@ -426,6 +426,189 @@ h1,h2,h3{font-family:'Playfair Display',serif;line-height:1.2;}
   .popup-footer{flex-direction:column;text-align:center;}
 }
 </style>
+<style>
+
+/* =====================================================
+   ADDED PORTAL / ADMIN / STUDENT LAYER
+   ===================================================== */
+.portal-fab{
+  position:fixed;right:18px;bottom:18px;z-index:12050;
+  border:none;border-radius:999px;padding:12px 16px;
+  background:linear-gradient(135deg,#C9922A,#E8AA48);
+  color:#0D1B40;font-weight:800;font-family:'DM Sans',sans-serif;
+  box-shadow:0 14px 38px rgba(201,146,42,.28);
+  cursor:pointer;
+}
+.portal-fab:hover{transform:translateY(-2px);}
+.portal-overlay,.admin-app,.student-app,.test-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #0b1b3a;
+  display: none;
+  z-index: 9999;
+}
+
+.portal-overlay.show,.admin-app.show,.student-app.show{display:flex;}
+.test-overlay.show{display:block !important;}
+.test-overlay.show .test-shell{
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+
+.portal-modal{
+  width:min(1100px,96vw);max-height:94vh;overflow:auto;
+  background:linear-gradient(180deg,rgba(255,255,255,.99),rgba(247,245,240,.99));
+  border-radius:28px;box-shadow:0 40px 120px rgba(0,0,0,.45);
+  border:1px solid rgba(201,146,42,.22);
+}
+.portal-head{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:16px 20px;background:linear-gradient(135deg,var(--navy),var(--blue));
+  color:#fff;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.portal-head h2{font-family:'Playfair Display',serif;font-size:1.15rem}
+.portal-close{
+  width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-size:1.2rem;
+}
+.portal-body-grid{display:grid;grid-template-columns:1fr 1fr;min-height:540px;}
+.portal-left,.portal-right{padding:24px;}
+.portal-left{background:#fff}.portal-right{background:linear-gradient(135deg,#0D1B40,#1e3c72);color:#fff}
+.portal-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.portal-tab-btn{border:none;border-radius:999px;padding:10px 15px;cursor:pointer;background:var(--smoke);color:var(--navy);font-weight:700}
+.portal-tab-btn.active{background:linear-gradient(135deg,var(--gold),var(--gold-lt));color:var(--navy)}
+.portal-tab{display:none}.portal-tab.active{display:block}
+.portal-note{margin-top:10px;font-size:.92rem;color:rgba(255,255,255,.78);line-height:1.7}
+.portal-status{font-size:.92rem;margin-top:12px;min-height:22px;font-weight:700}
+.portal-status.error{color:#b42318}
+.portal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.portal-field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.portal-field label{font-size:.74rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.portal-field input,.portal-field select,.portal-field textarea,.app-field input,.app-field select,.app-field textarea{
+  width:100%;padding:13px 14px;border-radius:12px;border:1px solid rgba(13,27,64,.14);background:#fff;color:var(--ink)
+}
+.portal-field textarea,.app-field textarea{min-height:110px;resize:vertical}
+
+.admin-app,.student-app{align-items:stretch;justify-content:stretch;background:#f5f7fb}
+.app-shell{display:flex;width:100%;height:100%}
+.app-sidebar{
+  width:250px;background:#0D1B40;color:#fff;padding:18px;overflow:auto;flex-shrink:0
+}
+.app-brand{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.app-brand img{width:40px;height:40px;border-radius:50%;border:2px solid #C9922A;object-fit:cover}
+.app-brand h3{font-family:'Playfair Display',serif;font-size:1.02rem;margin:0}
+.app-brand p{font-size:.72rem;letter-spacing:1.4px;text-transform:uppercase;color:rgba(232,170,72,.8)}
+.app-menu{display:grid;gap:8px;margin-top:10px}
+.app-menu button{
+  width:100%;border:none;background:#1e3c72;color:#fff;padding:12px 14px;border-radius:10px;
+  cursor:pointer;text-align:left;font-weight:700
+}
+.app-menu button:hover,.app-menu button.active{background:#C9922A;color:#111}
+.app-main{flex:1;overflow:auto;padding:20px}
+.app-topbar{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px
+}
+.app-title{font-family:'Playfair Display',serif;color:#0D1B40;font-size:1.5rem;margin:0}
+.app-sub{color:#6b7280;font-size:.88rem}
+.app-card{
+  background:#fff;border:1px solid rgba(201,146,42,.12);border-radius:20px;padding:18px;
+  box-shadow:0 4px 18px rgba(13,27,64,.06);margin-bottom:16px
+}
+.app-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.app-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.metric{
+  background:linear-gradient(135deg,#0D1B40,#1e3c72);color:#fff;border-radius:16px;padding:16px
+}
+.metric .n{font-family:'Playfair Display',serif;font-size:2rem;font-weight:800}
+.metric .l{font-size:.75rem;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.mini-list{display:grid;gap:10px}
+.mini-item{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:#eef4ff;color:#1e3c72;border-radius:999px;padding:6px 10px;font-size:.75rem;font-weight:700;margin:4px 6px 0 0}
+.empty-box{padding:14px;border:1px dashed #d9e2ef;border-radius:14px;background:#fbfdff;color:#5d6e83}
+.subject-title{
+  font-family:'Playfair Display',serif;font-size:1.05rem;color:#0D1B40;margin:4px 0 10px
+}
+.chapter-head{
+  background:linear-gradient(135deg,#1e3c72,#315caa);color:#fff;padding:10px 12px;border-radius:12px;
+  cursor:pointer;user-select:none;margin-top:10px;display:flex;justify-content:space-between;gap:12px;align-items:center
+}
+.chapter-body{display:none;padding:10px 0 0 12px;border-left:3px solid #1e3c72;margin-left:10px}
+.test-card{
+  margin-top:10px;background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:15px;
+  box-shadow:0 8px 22px rgba(12,20,32,.06)
+}
+.test-card strong{font-size:1rem;color:#15223b}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.primary-btn,.secondary-btn,.ghost-btn{
+  border:none;border-radius:12px;padding:11px 14px;font-weight:800;cursor:pointer
+}
+.primary-btn{background:linear-gradient(135deg,#0D1B40,#1e3c72);color:#fff}
+.secondary-btn{background:linear-gradient(135deg,#C9922A,#E8AA48);color:#12203a}
+.ghost-btn{background:#eef4ff;color:#1e3c72}
+.primary-btn:hover,.secondary-btn:hover,.ghost-btn:hover{transform:translateY(-1px)}
+.attempts-box{margin-top:12px;padding:12px;border-radius:14px;background:#fbfdff;border:1px solid #e5e7eb}
+.attempt-item{margin-top:8px;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid #e5e7eb}
+
+.app-table{
+  width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden
+}
+.app-table th,.app-table td{padding:10px 12px;border-bottom:1px solid #eef2f7;font-size:.9rem;text-align:left}
+.app-table th{background:#f8fafc;color:#0D1B40}
+.app-table tr:last-child td{border-bottom:none}
+
+.leaderboard-row{
+  display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #eef2f7
+}
+.leaderboard-row:last-child{border-bottom:none}
+.rank-badge{
+  width:28px;height:28px;border-radius:50%;background:#0D1B40;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800
+}
+.calendar-list{display:grid;gap:10px;max-height:360px;overflow:auto}
+.calendar-item{
+  background:#faf8f5;border:1px solid rgba(201,146,42,.15);border-radius:12px;padding:10px 12px
+}
+.calendar-date{font-size:.72rem;font-weight:800;color:#C9922A;letter-spacing:1px;text-transform:uppercase}
+.calendar-title{font-size:.88rem;font-weight:700;color:#0D1B40;margin-top:4px}
+.calendar-link{font-size:.78rem;color:#C9922A;font-weight:700;word-break:break-word}
+.question-card{
+  background:#fff;border:1px solid #e5e7eb;border-radius:22px;box-shadow:0 4px 18px rgba(13,27,64,.06);padding:22px
+}
+.question-meta{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.question-title{font-family:'Playfair Display',serif;font-size:1.34rem;color:#0D1B40}
+.question-sub{color:#6B7280;font-size:.92rem}
+.feedback{margin-top:14px;padding:12px;border-radius:12px;background:#f8fafc;border:1px solid #e5e7eb}
+.test-progress{height:6px;background:#d9e2f0;overflow:hidden}.test-progress>div{height:100%;width:0;background:linear-gradient(90deg,#C9922A,#E8AA48)}
+.test-body{flex:1;overflow:auto;padding:24px 18px 18px}
+.test-body-inner{max-width:1120px;margin:0 auto;width:100%}
+.test-topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 22px;background:linear-gradient(135deg,#0D1B40,#1e3c72);color:#fff}
+.test-kicker{font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:#d9e6ff;font-weight:700}
+.test-topbar h2{font-family:'Playfair Display',serif;margin-top:2px;font-size:1.2rem}
+.test-shell{width:100%;height:100%;display:flex;flex-direction:column;background:#f5f7fb;}
+.test-body-inner{max-width:1120px;margin:0 auto;width:100%;}
+.action-bar{position:sticky;bottom:0;background:rgba(248,250,252,.94);backdrop-filter:blur(8px);border-top:1px solid #e5e7eb;padding:14px 18px}
+.action-bar-inner{max-width:1120px;margin:0 auto;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.hotspot-image{max-width:100%;border-radius:12px;border:1px solid #e5e7eb;cursor:crosshair;display:block}
+.drag-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.drag-box,.drop-box{border:1px dashed #cbd5e1;border-radius:12px;padding:12px;min-height:120px;background:#fbfdff}
+.drag-item{padding:10px 12px;margin:8px 0;border-radius:10px;background:#e8efff;cursor:grab}
+.drop-slot{padding:10px 12px;margin:8px 0;border-radius:10px;background:#fff;border:1px solid #dbe4f0;min-height:20px}
+.hidden{display:none !important}
+
+@media (max-width: 980px){
+  .portal-body-grid,.app-grid-2,.app-grid-3,.portal-grid,.drag-wrap{grid-template-columns:1fr}
+  .app-sidebar{width:100%;height:auto}
+  .app-shell{flex-direction:column;height:auto}
+}
+@media (max-width: 640px){
+  .portal-left,.portal-right,.app-main{padding:18px}
+}
+
+</style>
 </head>
 <body>
 
@@ -872,6 +1055,24 @@ h1,h2,h3{font-family:'Playfair Display',serif;line-height:1.2;}
      JAVASCRIPT
      ============================================= -->
 <script>
+function slugify(text){
+  return String(text || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function normalizeTestId(v) {
+  return String(v ?? '').trim();
+}
+
+function getTestIdValue(q) {
+  return normalizeTestId(
+    q?.testId ?? q?.testID ?? q?.test_id ?? q?.testid ?? ''
+  );
+}
+
 /* Navbar */
 const navbar = document.getElementById('navbar');
 window.addEventListener('scroll', function() {
@@ -977,6 +1178,2084 @@ var observer = new IntersectionObserver(function(entries) {
   });
 }, { threshold: 0.08, rootMargin: '0px 0px -36px 0px' });
 document.querySelectorAll('.fade-in').forEach(function(el) { observer.observe(el); });
+</script>
+
+
+<!-- =====================================================
+     ADDED PORTAL LAUNCHER
+     ===================================================== -->
+<button id="portalFab" class="portal-fab" type="button">Portal</button>
+
+<!-- =====================================================
+     PORTAL OVERLAY
+     ===================================================== -->
+<div class="portal-overlay" id="portalOverlayX" aria-hidden="true">
+  <div class="portal-modal" role="dialog" aria-modal="true" aria-label="Portal login">
+    <div class="portal-head">
+      <h2>Student & Admin Portal</h2>
+      <button class="portal-close" id="portalCloseX" type="button">×</button>
+    </div>
+    <div class="portal-body-grid">
+      <div class="portal-left">
+        <div class="portal-tabs">
+          <button class="portal-tab-btn active" data-ptab="studentLoginX" type="button">Student Login</button>
+          <button class="portal-tab-btn" data-ptab="studentSignupX" type="button">Student Signup</button>
+          <button class="portal-tab-btn" data-ptab="adminLoginX" type="button">Admin Access</button>
+        </div>
+
+        <div class="portal-tab active" id="studentLoginX">
+          <div class="portal-field"><label>Email</label><input type="email" id="loginEmailX" placeholder="student@email.com"></div>
+          <div class="portal-field"><label>Password</label><input type="password" id="loginPasswordX" placeholder="••••••••"></div>
+          <button class="secondary-btn" id="studentLoginBtnX" type="button">Login</button>
+          <div class="portal-status" id="studentLoginStatusX"></div>
+        </div>
+
+        <div class="portal-tab" id="studentSignupX">
+          <div class="portal-grid">
+            <div class="portal-field"><label>Full Name</label><input type="text" id="signupNameX" placeholder="Your name"></div>
+            <div class="portal-field"><label>Email</label><input type="email" id="signupEmailX" placeholder="student@email.com"></div>
+          </div>
+          <div class="portal-grid">
+            <div class="portal-field"><label>Password</label><input type="password" id="signupPasswordX" placeholder="Create password"></div>
+            <div class="portal-field"><label>WhatsApp Number</label><input type="tel" id="signupPhoneX" placeholder="+91..."></div>
+          </div>
+          <button class="secondary-btn" id="studentSignupBtnX" type="button">Create Account</button>
+          <div class="portal-status" id="studentSignupStatusX"></div>
+        </div>
+
+        <div class="portal-tab" id="adminLoginX">
+          <div class="portal-field"><label>Admin Email</label><input type="email" id="adminEmailX" placeholder="admin@email.com"></div>
+          <div class="portal-field"><label>Password</label><input type="password" id="adminPasswordX" placeholder="••••••••"></div>
+          <button class="secondary-btn" id="adminLoginBtnX" type="button">Login as Admin</button>
+          <div class="portal-status" id="adminLoginStatusX"></div>
+          <p class="portal-note">Only the configured admin email can access the admin dashboard.</p>
+        </div>
+      </div>
+      <div class="portal-right">
+        <h3 style="font-family:'Playfair Display',serif;margin-bottom:10px;">Platform Access</h3>
+        <p class="portal-note">Students can log in to practice tests, track performance, and review lectures. Admin can create tests, add questions, and upload lectures from the same app.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================
+     ADMIN APP
+     ===================================================== -->
+<div class="admin-app" id="adminAppX" aria-hidden="true">
+  <div class="app-shell">
+    <aside class="app-sidebar">
+      <div class="app-brand">
+        <img src="https://pasteimg.com/images/2026/03/31/WhatsApp-Image-2026-03-19-at-6.49.19-PM.jpg" alt="Vinayak ProEdu">
+        <div>
+          <h3>Vinayak ProEdu</h3>
+          <p>Admin Panel</p>
+        </div>
+      </div>
+      <div class="app-menu">
+        <button class="active" data-admin-view="adminDashX" type="button">Dashboard</button>
+        <button data-admin-view="adminTestsX" type="button">Tests</button>
+        <button data-admin-view="adminLecturesX" type="button">Lectures</button>
+        <button data-admin-view="adminStudentsX" type="button">Students</button>
+        <button data-admin-view="adminLeaderboardX" type="button">Leaderboard</button>
+        <button id="adminLogoutBtnX" type="button">Logout</button>
+      </div>
+    </aside>
+    <main class="app-main">
+      <div class="app-topbar">
+        <div>
+          <h2 class="app-title">Admin Dashboard</h2>
+          <div class="app-sub">Manage tests, lectures, students and leaderboard</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button id="adminThemeBtnX" class="ghost-btn" type="button">Light / Dark</button>
+          <button id="adminCloseBtnX" class="ghost-btn" type="button">Close</button>
+        </div>
+      </div>
+
+      <section class="app-view" id="adminDashX">
+        <div class="app-grid-3">
+          <div class="metric"><div class="n" id="adminCountTestsX">0</div><div class="l">Tests</div></div>
+          <div class="metric"><div class="n" id="adminCountQuestionsX">0</div><div class="l">Questions</div></div>
+          <div class="metric"><div class="n" id="adminCountLecturesX">0</div><div class="l">Lectures</div></div>
+        </div>
+        <div class="app-grid-2" style="margin-top:16px;">
+          <div class="app-card">
+            <h3 class="subject-title">Recent Activity</h3>
+            <div id="adminActivityX" class="mini-list"></div>
+          </div>
+          <div class="app-card">
+            <h3 class="subject-title">Quick Actions</h3>
+            <div class="app-grid-2">
+              <button class="primary-btn" id="jumpCreateTestX" type="button">Create Test</button>
+              <button class="secondary-btn" id="jumpUploadLectureX" type="button">Upload Lecture</button>
+            </div>
+            <div class="hr"></div>
+            <div class="empty-box">Student data, test analytics, and uploads update live from Firebase.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="app-view hidden" id="adminTestsX">
+        <div class="app-grid-2">
+          <div class="app-card">
+            <h3 class="subject-title">Create / Select Test</h3>
+            <div class="portal-field"><label>Test Title</label><input type="text" id="adminTestTitleX" placeholder="e.g. FR Chapter 1"></div>
+            <div class="portal-field"><label>Subject / Paper</label><input type="text" id="adminTestSubjectX" placeholder="e.g. Financial Reporting"></div>
+            <div class="portal-field"><label>Chapter / Topic</label><input type="text" id="adminTestChapterX" placeholder="e.g. Conceptual Framework"></div>
+            <div class="btn-row">
+              <button class="primary-btn" id="adminCreateTestBtnX" type="button">Create / Load Test</button>
+              <button class="ghost-btn" id="adminClearTestBtnX" type="button">Clear</button>
+            </div>
+            <div class="portal-status" id="adminTestStatusX"></div>
+            <div class="hr"></div>
+            <div id="adminTestListX" class="mini-list"></div>
+          </div>
+          <div class="app-card">
+            <h3 class="subject-title">Add Question</h3>
+            <div class="portal-field"><label>Selected Test</label><select id="adminSelectedTestX"><option value="">Select created test</option></select></div>
+            <div class="portal-field"><label>Question Type</label>
+              <select id="adminQuestionTypeX">
+                <option value="mcq">MCQ</option>
+                <option value="multi">Multiple Response</option>
+                <option value="fill">Fill in the Blank</option>
+                <option value="drag">Drag and Drop</option>
+                <option value="dropdown">Dropdown</option>
+                <option value="hotspot">Hot Spot</option>
+                <option value="hotarea">Hot Area</option>
+                <option value="otcase">OT Case</option>
+                <option value="word">Constructed Response – Word</option>
+                <option value="sheet">Constructed Response – Spreadsheet</option>
+              </select>
+            </div>
+            <div class="portal-field"><label>Question Text</label><textarea id="adminQuestionTextX"></textarea></div>
+            <div class="portal-field"><label>Marks</label><input type="number" id="adminMarksX" placeholder="2"></div>
+            <div id="adminDynamicFieldsX" class="empty-box"></div>
+            <div class="portal-field"><label>Explanation</label><textarea id="adminExplanationX"></textarea></div>
+            <button class="primary-btn" id="adminUploadQuestionBtnX" type="button">Upload Question</button>
+            <div class="portal-status" id="adminQuestionStatusX"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="app-view hidden" id="adminLecturesX">
+        <div class="app-grid-2">
+          <div class="app-card">
+            <h3 class="subject-title">Upload Lecture</h3>
+            <div class="portal-field"><label>Lecture Date</label><input type="date" id="adminLectureDateX"></div>
+            <div class="portal-field"><label>Lecture Title</label><input type="text" id="adminLectureTitleX" placeholder="Lecture title"></div>
+            <div class="portal-field"><label>Lecture File</label><input type="file" id="adminLectureFileX" accept=".pdf,.mp4,.mov,.avi,.mkv"></div>
+            <button class="primary-btn" id="adminUploadLectureBtnX" type="button">Upload Lecture</button>
+            <div class="portal-status" id="adminLectureStatusX"></div>
+          </div>
+          <div class="app-card">
+            <h3 class="subject-title">Lecture Calendar</h3>
+            <div class="portal-field"><label>Filter by Date</label><input type="date" id="adminLectureFilterX"></div>
+            <div class="mini-list" id="adminLectureListX"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="app-view hidden" id="adminStudentsX">
+        <div class="app-grid-2">
+          <div class="app-card">
+            <h3 class="subject-title">Students</h3>
+            <div class="portal-field"><label>Select Student</label><select id="adminStudentSelectX"><option value="">Loading...</option></select></div>
+            <div id="adminStudentSummaryX"></div>
+          </div>
+          <div class="app-card">
+            <h3 class="subject-title">Paper Breakdown</h3>
+            <div id="adminStudentPaperBreakdownX" class="mini-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="app-view hidden" id="adminLeaderboardX">
+        <div class="app-card">
+          <h3 class="subject-title">Leaderboard</h3>
+          <div id="adminLeaderboardListX"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- =====================================================
+     STUDENT APP
+     ===================================================== -->
+<div class="student-app" id="studentAppX" aria-hidden="true">
+  <div class="app-shell">
+    <aside class="app-sidebar">
+      <div class="app-brand">
+        <img src="https://pasteimg.com/images/2026/03/31/WhatsApp-Image-2026-03-19-at-6.49.19-PM.jpg" alt="Vinayak ProEdu">
+        <div>
+          <h3>Student Dashboard</h3>
+          <p id="studentHelloX">Welcome</p>
+        </div>
+      </div>
+      <div class="app-menu">
+        <button class="active" data-stu-view="studentHomeX" type="button">Home</button>
+        <button data-stu-view="studentPracticeX" type="button">Practice</button>
+        <button data-stu-view="studentLecturesX" type="button">Lectures</button>
+        <button data-stu-view="studentCalendarX" type="button">Calendar</button>
+        <button data-stu-view="studentLeaderboardX" type="button">Leaderboard</button>
+        <button data-stu-view="studentAttemptsX" type="button">Attempts</button>
+        <button id="studentLogoutBtnX" type="button">Logout</button>
+      </div>
+    </aside>
+    <main class="app-main">
+      <div class="app-topbar">
+        <div>
+          <h2 class="app-title">Student Dashboard</h2>
+          <div class="app-sub">Practice tests, lectures, leaderboard and attempts</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button id="studentCloseBtnX" class="ghost-btn" type="button">Close</button>
+        </div>
+      </div>
+
+      <section class="app-view" id="studentHomeX">
+        <div class="app-grid-3">
+          <div class="metric"><div class="n" id="studentStatAttemptsX">0</div><div class="l">Attempts</div></div>
+          <div class="metric"><div class="n" id="studentStatAvgX">0%</div><div class="l">Average</div></div>
+          <div class="metric"><div class="n" id="studentStatBestX">0%</div><div class="l">Best Score</div></div>
+        </div>
+        <div class="app-grid-2" style="margin-top:16px;">
+          <div class="app-card">
+            <h3 class="subject-title">Your Performance</h3>
+            <div id="studentPerformanceX"></div>
+          </div>
+          <div class="app-card">
+            <h3 class="subject-title">Recent Attempts</h3>
+            <div id="studentRecentAttemptsX" class="mini-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="app-view hidden" id="studentPracticeX">
+        <div class="app-card">
+          <h3 class="subject-title">Practice Tests</h3>
+          <div class="portal-status" id="studentPracticeStatusX"></div>
+          <div id="studentTestListX" class="mini-list"></div>
+        </div>
+      </section>
+
+      <section class="app-view hidden" id="studentLecturesX">
+        <div class="app-card">
+          <h3 class="subject-title">Lectures</h3>
+          <div id="studentLectureListX" class="mini-list"></div>
+        </div>
+      </section>
+
+      <section class="app-view hidden" id="studentCalendarX">
+        <div class="app-card">
+          <h3 class="subject-title">Lecture Calendar</h3>
+          <div id="studentCalendarListX" class="calendar-list"></div>
+        </div>
+      </section>
+
+      <section class="app-view hidden" id="studentLeaderboardX">
+        <div class="app-card">
+          <h3 class="subject-title">Leaderboard</h3>
+          <div id="studentLeaderboardListX"></div>
+        </div>
+      </section>
+
+      <section class="app-view hidden" id="studentAttemptsX">
+        <div class="app-card">
+          <h3 class="subject-title">All Attempts</h3>
+          <div id="studentAllAttemptsX" class="mini-list"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- =====================================================
+     TEST OVERLAY
+     ===================================================== -->
+<div class="test-overlay" id="testOverlayX" aria-hidden="true">
+  <div class="test-shell">
+    <div class="test-topbar">
+      <div>
+        <div class="test-kicker">Practice Test</div>
+        <h2 id="overlayTitleX">Loading...</h2>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div id="overlayProgressX" class="small" style="color:#fff;">Q 1 / 1</div>
+        <button class="portal-close" id="closeTestOverlayBtnX" type="button">×</button>
+      </div>
+    </div>
+    <div class="test-progress"><div id="progressBarX"></div></div>
+    <div class="test-body">
+      <div class="test-body-inner">
+        <div id="questionAreaX"></div>
+        <div id="questionFeedbackX" class="feedback hidden"></div>
+      </div>
+    </div>
+    <div class="action-bar">
+      <div class="action-bar-inner">
+        <button class="ghost-btn" id="clearBtnX" type="button">Clear</button>
+        <button class="primary-btn" id="submitBtnX" type="button">Submit Answer</button>
+        <button class="secondary-btn hidden" id="nextBtnX" type="button">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase + app JS -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+<script>
+(function(){
+  const firebaseConfig = {
+    apiKey: "AIzaSyCwZGVK9I_GQmJkRatZOyMs0gdcZ8nSouc",
+    authDomain: "vinayak-proedu.firebaseapp.com",
+    projectId: "vinayak-proedu",
+    storageBucket: "vinayak-proedu.appspot.com",
+    messagingSenderId: "993646562333",
+    appId: "1:993646562333:web:5f37a0b63d4d177adf4af4"
+  };
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  const storage = firebase.storage();
+  const ADMIN_EMAIL = "vinayakproedu@gmail.com";
+
+  const el = {
+    portalFab: document.getElementById('portalFab'),
+    portalOverlay: document.getElementById('portalOverlayX'),
+    portalClose: document.getElementById('portalCloseX'),
+    portalTabBtns: Array.from(document.querySelectorAll('.portal-tab-btn')),
+    portalTabs: Array.from(document.querySelectorAll('.portal-tab')),
+    studentLoginBtn: document.getElementById('studentLoginBtnX'),
+    studentSignupBtn: document.getElementById('studentSignupBtnX'),
+    adminLoginBtn: document.getElementById('adminLoginBtnX'),
+    studentLoginStatus: document.getElementById('studentLoginStatusX'),
+    studentSignupStatus: document.getElementById('studentSignupStatusX'),
+    adminLoginStatus: document.getElementById('adminLoginStatusX'),
+    loginEmail: document.getElementById('loginEmailX'),
+    loginPassword: document.getElementById('loginPasswordX'),
+    signupName: document.getElementById('signupNameX'),
+    signupEmail: document.getElementById('signupEmailX'),
+    signupPassword: document.getElementById('signupPasswordX'),
+    signupPhone: document.getElementById('signupPhoneX'),
+    adminEmail: document.getElementById('adminEmailX'),
+    adminPassword: document.getElementById('adminPasswordX'),
+    studentApp: document.getElementById('studentAppX'),
+    adminApp: document.getElementById('adminAppX'),
+    studentHello: document.getElementById('studentHelloX'),
+    studentCloseBtn: document.getElementById('studentCloseBtnX'),
+    adminCloseBtn: document.getElementById('adminCloseBtnX'),
+    adminLogoutBtn: document.getElementById('adminLogoutBtnX'),
+    studentLogoutBtn: document.getElementById('studentLogoutBtnX'),
+    adminThemeBtn: document.getElementById('adminThemeBtnX'),
+    studentViews: Array.from(document.querySelectorAll('.student-app .app-view')),
+    adminViews: Array.from(document.querySelectorAll('.admin-app .app-view')),
+    adminMenuBtns: Array.from(document.querySelectorAll('.admin-app .app-menu button[data-admin-view]')),
+    studentMenuBtns: Array.from(document.querySelectorAll('.student-app .app-menu button[data-stu-view]')),
+    // admin
+    adminCountTests: document.getElementById('adminCountTestsX'),
+    adminCountQuestions: document.getElementById('adminCountQuestionsX'),
+    adminCountLectures: document.getElementById('adminCountLecturesX'),
+    adminActivity: document.getElementById('adminActivityX'),
+    jumpCreateTest: document.getElementById('jumpCreateTestX'),
+    jumpUploadLecture: document.getElementById('jumpUploadLectureX'),
+    adminDash: document.getElementById('adminDashX'),
+    adminTests: document.getElementById('adminTestsX'),
+    adminLectures: document.getElementById('adminLecturesX'),
+    adminStudents: document.getElementById('adminStudentsX'),
+    adminLeaderboard: document.getElementById('adminLeaderboardX'),
+    adminTestTitle: document.getElementById('adminTestTitleX'),
+    adminTestSubject: document.getElementById('adminTestSubjectX'),
+    adminTestChapter: document.getElementById('adminTestChapterX'),
+    adminCreateTestBtn: document.getElementById('adminCreateTestBtnX'),
+    adminClearTestBtn: document.getElementById('adminClearTestBtnX'),
+    adminTestStatus: document.getElementById('adminTestStatusX'),
+    adminTestList: document.getElementById('adminTestListX'),
+    adminSelectedTest: document.getElementById('adminSelectedTestX'),
+    adminQuestionType: document.getElementById('adminQuestionTypeX'),
+    adminQuestionText: document.getElementById('adminQuestionTextX'),
+    adminMarks: document.getElementById('adminMarksX'),
+    adminDynamicFields: document.getElementById('adminDynamicFieldsX'),
+    adminExplanation: document.getElementById('adminExplanationX'),
+    adminUploadQuestionBtn: document.getElementById('adminUploadQuestionBtnX'),
+    adminQuestionStatus: document.getElementById('adminQuestionStatusX'),
+    adminLectureDate: document.getElementById('adminLectureDateX'),
+    adminLectureTitle: document.getElementById('adminLectureTitleX'),
+    adminLectureFile: document.getElementById('adminLectureFileX'),
+    adminUploadLectureBtn: document.getElementById('adminUploadLectureBtnX'),
+    adminLectureStatus: document.getElementById('adminLectureStatusX'),
+    adminLectureFilter: document.getElementById('adminLectureFilterX'),
+    adminLectureList: document.getElementById('adminLectureListX'),
+    adminStudentSelect: document.getElementById('adminStudentSelectX'),
+    adminStudentSummary: document.getElementById('adminStudentSummaryX'),
+    adminStudentPaperBreakdown: document.getElementById('adminStudentPaperBreakdownX'),
+    adminLeaderboardList: document.getElementById('adminLeaderboardListX'),
+    // student
+    studentHome: document.getElementById('studentHomeX'),
+    studentPractice: document.getElementById('studentPracticeX'),
+    studentLectures: document.getElementById('studentLecturesX'),
+    studentCalendar: document.getElementById('studentCalendarX'),
+    studentLeaderboard: document.getElementById('studentLeaderboardX'),
+    studentAttempts: document.getElementById('studentAttemptsX'),
+    studentStatAttempts: document.getElementById('studentStatAttemptsX'),
+    studentStatAvg: document.getElementById('studentStatAvgX'),
+    studentStatBest: document.getElementById('studentStatBestX'),
+    studentPerformance: document.getElementById('studentPerformanceX'),
+    studentRecentAttempts: document.getElementById('studentRecentAttemptsX'),
+    studentPracticeStatus: document.getElementById('studentPracticeStatusX'),
+    studentTestList: document.getElementById('studentTestListX'),
+    studentLectureList: document.getElementById('studentLectureListX'),
+    studentCalendarList: document.getElementById('studentCalendarListX'),
+    studentLeaderboardList: document.getElementById('studentLeaderboardListX'),
+    studentAllAttempts: document.getElementById('studentAllAttemptsX'),
+    // test
+    testOverlay: document.getElementById('testOverlayX'),
+    closeTestOverlayBtn: document.getElementById('closeTestOverlayBtnX'),
+    overlayTitle: document.getElementById('overlayTitleX'),
+    overlayProgress: document.getElementById('overlayProgressX'),
+    progressBar: document.getElementById('progressBarX'),
+    questionArea: document.getElementById('questionAreaX'),
+    questionFeedback: document.getElementById('questionFeedbackX'),
+    clearBtn: document.getElementById('clearBtnX'),
+    submitBtn: document.getElementById('submitBtnX'),
+    nextBtn: document.getElementById('nextBtnX'),
+  };
+
+  const state = {
+    startTime: null,
+timeTaken: 0,
+    currentUser: null,
+    isAdmin: false,
+    adminUnlocked: sessionStorage.getItem('adminUnlocked') === '1',
+    tests: [],
+    lectures: [],
+    users: [],
+    attempts: [],
+    currentTest: null,
+    currentIndex: 0,
+    currentScore: 0,
+    currentResponses: [],
+    selectedChoice: null,
+    selectedMulti: [],
+    selectedDropdown: '',
+    fillAnswer: '',
+    manualAnswer: '',
+    hotspotText: '',
+    hotspotClick: null,
+    dragMap: {},
+    submitted: false,
+    currentStudentId: ''
+  };
+
+  function esc(v){ return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+  function fmtDate(v){ if(!v) return ''; const d = v.toDate ? v.toDate() : new Date(v.seconds ? v.seconds * 1000 : v); return d.toLocaleString(); }
+  function val(id){ const node = document.getElementById(id); return node ? node.value.trim() : ''; }
+function getCurrentUser(){ return state.currentUser || firebase.auth().currentUser || null; }
+  function setStatus(node, msg, error=false){ if(!node) return; node.textContent = msg; node.classList.toggle('error', !!error); }
+  function show(node){ if(node) node.classList.add('show'); }
+  function hide(node){ if(node) node.classList.remove('show'); }
+  function showView(containerViews, viewId){
+    containerViews.forEach(v => v.classList.add('hidden'));
+    const view = document.getElementById(viewId);
+    if(view) view.classList.remove('hidden');
+  }
+  function setMenuActive(btns, keyAttr, value){
+    btns.forEach(b => b.classList.toggle('active', b.dataset[keyAttr] === value));
+  }
+  function switchPortalTab(tabId){
+    el.portalTabBtns.forEach(b => b.classList.toggle('active', b.dataset.ptab === tabId));
+    el.portalTabs.forEach(t => t.classList.toggle('active', t.id === tabId));
+  }
+
+  function openPortal(){ show(el.portalOverlay); document.body.style.overflow='hidden'; switchPortalTab('studentLoginX'); }
+  function closePortal(){ hide(el.portalOverlay); document.body.style.overflow=''; }
+  function openStudentApp(){ show(el.studentApp); document.body.style.overflow='hidden'; }
+  function closeStudentApp(){ hide(el.studentApp); document.body.style.overflow=''; }
+  function openAdminApp(){ show(el.adminApp); document.body.style.overflow='hidden'; }
+  function closeAdminApp(){ hide(el.adminApp); document.body.style.overflow=''; }
+
+  function closeAllApps(){
+    closePortal(); closeStudentApp(); closeAdminApp();
+    hide(el.testOverlay);
+  }
+
+  function attachTestButtons(){
+    el.submitBtn.onclick = submitCurrentAnswer;
+    el.nextBtn.onclick = nextQuestion;
+    el.clearBtn.onclick = clearCurrentAnswer;
+    el.closeTestOverlayBtn.onclick = closeTestOverlay;
+  }
+
+  function setStudentHomeGreeting(name){
+    el.studentHello.textContent = `Logged in as ${name || 'Student'}`;
+  }
+
+  function renderAdminQuestionFields(){
+    const type = el.adminQuestionType.value;
+    const box = el.adminDynamicFields;
+    if(!box) return;
+    box.innerHTML = '';
+    if(['mcq','multi','dropdown'].includes(type)){
+      box.innerHTML = `
+        <div class="portal-grid">
+          <div class="portal-field"><label>Option 1</label><input id="adminOpt1X" type="text"></div>
+          <div class="portal-field"><label>Option 2</label><input id="adminOpt2X" type="text"></div>
+        </div>
+        <div class="portal-grid">
+          <div class="portal-field"><label>Option 3</label><input id="adminOpt3X" type="text"></div>
+          <div class="portal-field"><label>Option 4</label><input id="adminOpt4X" type="text"></div>
+        </div>
+        <div class="portal-field"><label>Correct Answer</label><input id="adminCorrectX" type="text" placeholder="${type==='multi' ? 'e.g. 0,2' : 'e.g. 2'}"></div>
+      `;
+    } else if(type==='fill'){
+      box.innerHTML = `<div class="portal-field"><label>Correct Answer</label><input id="adminAnswerX" type="text"></div>`;
+    } else if(type==='drag'){
+      box.innerHTML = `<div class="portal-field"><label>Drag & Drop Pairs (JSON)</label><textarea id="adminPairsX" placeholder='[{"drag":"Asset","drop":"Balance Sheet"}]'></textarea></div>`;
+    } else if(type==='hotspot' || type==='hotarea'){
+      box.innerHTML = `
+        <div class="portal-field"><label>Attach Image</label><input id="adminImageFileX" type="file" accept="image/*"></div>
+        <div class="portal-field"><label>Correct Answer / Area</label><input id="adminCoordsX" type="text"></div>
+      `;
+    } else if(type==='otcase'){
+      box.innerHTML = `
+        <div class="portal-field"><label>Case Scenario</label><textarea id="adminCaseScenarioX"></textarea></div>
+        <div class="portal-field"><label>Correct Answer / Notes</label><textarea id="adminCaseAnswerX"></textarea></div>
+      `;
+    } else {
+      box.innerHTML = `
+        <div class="portal-field"><label>Template File</label><input id="adminTemplateFileX" type="file"></div>
+        <div class="portal-field"><label>Marking Guide</label><textarea id="adminTemplateAnswerX"></textarea></div>
+      `;
+    }
+  }
+
+  function getAdminQuestionData(){
+    const type = el.adminQuestionType.value;
+    const data = {
+      type,
+      question: val('adminQuestionTextX'),
+      explanation: val('adminExplanationX'),
+      marks: Number(val('adminMarksX') || 0)
+    };
+    if(type==='mcq' || type==='dropdown'){
+      data.options = [val('adminOpt1X'), val('adminOpt2X'), val('adminOpt3X'), val('adminOpt4X')].filter(Boolean);
+      data.correct = Number(val('adminCorrectX'));
+    } else if(type==='multi'){
+      data.options = [val('adminOpt1X'), val('adminOpt2X'), val('adminOpt3X'), val('adminOpt4X')].filter(Boolean);
+      data.correct = (val('adminCorrectX') || '').split(',').map(v=>Number(v.trim())).filter(v=>!Number.isNaN(v));
+    } else if(type==='fill'){
+      data.answer = val('adminAnswerX');
+    } else if(type==='drag'){
+      data.pairs = JSON.parse(val('adminPairsX') || '[]');
+    } else if(type==='hotspot' || type==='hotarea'){
+      data.coords = val('adminCoordsX');
+    } else if(type==='otcase'){
+      data.caseScenario = val('adminCaseScenarioX');
+      data.caseAnswer = val('adminCaseAnswerX');
+    } else {
+      data.templateAnswer = val('adminTemplateAnswerX');
+    }
+    return data;
+  }
+
+  async function uploadFileIfAny(inputId, folder){
+    const input = document.getElementById(inputId);
+    if(!input || !input.files || !input.files[0]) return '';
+    const file = input.files[0];
+    const safe = Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    const ref = storage.ref(`${folder}/${safe}`);
+    await ref.put(file);
+    return await ref.getDownloadURL();
+  }
+
+  async function loadAllData(force = false) {
+    state._loadAllPromise = state._loadAllPromise || null;
+    state._loadAllAt = state._loadAllAt || 0;
+    if (state._loadAllPromise && !force) return state._loadAllPromise;
+
+    state._loadAllPromise = (async () => {
+      const [testsRes, lecturesRes, usersRes, attemptsRes] = await Promise.allSettled([
+        db.collection('tests').get(),
+        db.collection('lectures').get(),
+        db.collection('users').get(),
+        db.collection('attempts').get()
+      ]);
+
+      const docsFrom = (res) => (res && res.status === 'fulfilled' && res.value) ? res.value.docs : [];
+
+      const testsDocs = docsFrom(testsRes);
+      const lecturesDocs = docsFrom(lecturesRes);
+      const usersDocs = docsFrom(usersRes);
+      const attemptsDocs = docsFrom(attemptsRes);
+
+      state.tests = testsDocs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+      state.lectures = lecturesDocs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.uploadedAt?.seconds || 0) - (a.uploadedAt?.seconds || 0));
+
+      state.users = usersDocs.map(d => ({ id: d.id, ...d.data() }));
+      state.attempts = attemptsDocs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+      state._loadAllAt = Date.now();
+      return state;
+    })().catch(err => {
+      console.error('loadAllData failed', err);
+      return state;
+    }).finally(() => {
+      state._loadAllPromise = null;
+    });
+
+    return state._loadAllPromise;
+  }
+
+function synthesizeTestsFromQuestions(qDocs){
+    const byTest = {};
+    qDocs.forEach(doc => {
+      const q = doc.data ? doc.data() : doc;
+      const id = String(q.testId || q.testID || q.test_id || q.testid || '').trim();
+      if(!id) return;
+      if(!byTest[id]){
+        byTest[id] = {
+          id,
+          title: q.testTitle || q.title || `Test ${Object.keys(byTest).length + 1}`,
+          subject: q.subject || 'Other',
+          chapter: q.chapter || 'General',
+          createdAt: q.createdAt || null,
+          questionCount: 0
+        };
+      }
+      byTest[id].questionCount++;
+    });
+    return Object.values(byTest);
+  }
+
+  async function refreshAdminDashboard(){
+    await loadAllData();
+    let qCount = 0;
+    try{
+      const qCountSnap = await db.collection('questions').get();
+      qCount = qCountSnap.size;
+    }catch(err){
+      console.warn('questions count unavailable', err);
+    }
+    el.adminCountTests.textContent = state.tests.length;
+    el.adminCountQuestions.textContent = qCount;
+    el.adminCountLectures.textContent = state.lectures.length;
+
+    const recent = state.attempts.slice(0,6).map(a => `
+      <div class="mini-item">
+        <strong>${esc(a.testTitle || 'Test')}</strong><br>
+        <span class="small">${esc(a.userName || a.userEmail || 'Student')} · ${a.percentage || 0}%</span>
+      </div>
+    `).join('');
+    el.adminActivity.innerHTML = recent || `<div class="empty-box">No recent activity.</div>`;
+  }
+
+  async function loadAdminTests(){
+    await loadAllData();
+    let qDocs = [];
+    try{
+      const qSnap = await db.collection('questions').get();
+      qDocs = qSnap.docs;
+      console.log("QUESTIONS RAW:", qDocs);
+      console.log("TESTS STATE:", state.tests);
+    }catch(err){
+      console.warn('questions unavailable for admin tests', err);
+    }
+const testsBase = (() => {
+  console.log("STATE TESTS:", state.tests); // ADD THIS
+    
+      const fromTests = Array.isArray(state.tests) ? state.tests : [];
+      console.log("STATE TESTS:", state.tests);
+      const fromQuestions = synthesizeTestsFromQuestions(qDocs);
+      const merged = new Map();
+      [...fromTests, ...fromQuestions].forEach(t => {
+        const id = String(t.id || '').trim();
+        if(!id) return;
+        const prev = merged.get(id) || {};
+        merged.set(id, {
+          ...prev,
+          ...t,
+          id,
+          questionCount: Math.max(
+  Number(prev.questionCount || 0) + Number(t.questionCount || 0),
+  1 // 🔥 FORCE MINIMUM
+)
+        });
+      });
+      return [...merged.values()];
+    })();
+    const testsWithCounts = testsBase.map(t => ({
+      ...t,
+      questionCount: qDocs.filter(q=>String((q.data().testId || q.data().testID || q.data().test_id || q.data().testid || ''))===String(t.id)).length
+    }));
+
+    if(!testsWithCounts.length){
+      el.adminTestList.innerHTML = `<div class="empty-box">No tests yet.</div>`;
+      el.adminSelectedTest.innerHTML = `<option value="">Select created test</option>`;
+      return;
+    }
+
+    el.adminTestList.innerHTML = testsWithCounts.map(t=>`
+      <div class="mini-item">
+        <strong>${esc(t.title || 'Test')}</strong><br>
+        <span class="small">${esc(t.subject || '')}${t.chapter ? ' · ' + esc(t.chapter) : ''}</span><br>
+        <span class="small">Questions: ${Number(t.questionCount || 0)}</span><br><br>
+        <div class="btn-row">
+          <button class="ghost-btn" type="button" onclick="window.__selectTestX('${t.id}')">Select</button>
+          <button class="secondary-btn" type="button" onclick="window.__deleteTestX('${t.id}')">Delete</button>
+        </div>
+      </div>
+    `).join('');
+
+    el.adminSelectedTest.innerHTML = `<option value="">Select created test</option>` + testsWithCounts.map(t => `<option value="${t.id}">${esc(t.title || 'Test')}</option>`).join('');
+  }
+
+  window.__selectTestX = function(id){
+    el.adminSelectedTest.value = id;
+    const t = state.tests.find(x=>x.id===id);
+    if(t){
+      el.adminTestTitle.value = t.title || '';
+      el.adminTestSubject.value = t.subject || '';
+      el.adminTestChapter.value = t.chapter || '';
+      setStatus(el.adminTestStatus, `Selected test: ${t.title || 'Test'}`);
+    }
+  };
+
+  window.__deleteTestX = async function(id){
+    if(!confirm('Delete this test and its questions?')) return;
+    const qSnap = await db.collection('questions').where('testId','==',id).get();
+    const batch = db.batch();
+    qSnap.forEach(doc => batch.delete(doc.ref));
+    batch.delete(db.collection('tests').doc(id));
+    await batch.commit();
+    await loadAdminTests();
+    await refreshStudentPractice();
+    await refreshAdminDashboard();
+  };
+
+  function populateAdminStudents(){
+    const users = state.users.filter(u=>String(u.role || 'student') === 'student');
+    const opts = users.map(u => `<option value="${u.id}">${esc(u.name || u.email || u.id)}</option>`).join('');
+    el.adminStudentSelect.innerHTML = opts || `<option value="">No students yet</option>`;
+    if(users[0]) {
+      el.adminStudentSelect.value = users[0].id;
+      renderAdminStudent(users[0].id);
+    }
+  }
+
+  function renderAdminStudent(userId){
+    const user = state.users.find(u=>u.id===userId);
+    if(!user){ el.adminStudentSummary.innerHTML = `<div class="empty-box">No student selected.</div>`; el.adminStudentPaperBreakdown.innerHTML = ''; return; }
+    const attempts = state.attempts.filter(a=>String(a.userId||'')===String(userId));
+    const totalScore = attempts.reduce((sum,a)=>sum + Number(a.score || 0), 0);
+    const totalMarks = attempts.reduce((sum,a)=>sum + Number(a.total || 0), 0);
+    const avg = totalMarks ? Math.round((totalScore/totalMarks)*100) : 0;
+    el.adminStudentSummary.innerHTML = `
+      <div class="app-grid-2">
+        <div class="metric"><div class="n">${attempts.length}</div><div class="l">Attempts</div></div>
+        <div class="metric"><div class="n">${avg}%</div><div class="l">Average</div></div>
+      </div>
+      <div class="hr"></div>
+      <div class="empty-box">Student: <strong>${esc(user.name || user.email || 'Student')}</strong></div>
+    `;
+    const byPaper = {};
+    attempts.forEach(a=>{
+      const paper = a.subject || 'General';
+      if(!byPaper[paper]) byPaper[paper] = {attempts:0, score:0, total:0};
+      byPaper[paper].attempts++;
+      byPaper[paper].score += Number(a.score || 0);
+      byPaper[paper].total += Number(a.total || 0);
+    });
+    el.adminStudentPaperBreakdown.innerHTML = Object.keys(byPaper).length ? Object.keys(byPaper).sort().map(p=>`
+      <div class="mini-item">
+        <strong>${esc(p)}</strong><br>
+        <span class="small">Attempts: ${byPaper[p].attempts} · Marks: ${byPaper[p].score}/${byPaper[p].total}</span>
+      </div>
+    `).join('') : `<div class="empty-box">No attempts yet for this student.</div>`;
+  }
+
+  function loadAdminLeaderboard(){
+    const ranking = {};
+    state.attempts.forEach(a=>{
+      const key = String(a.userId || a.userEmail || 'unknown');
+      if(!ranking[key]) ranking[key] = {name:a.userName || a.userEmail || 'Student', score:0, total:0, attempts:0};
+      ranking[key].score += Number(a.score || 0);
+      ranking[key].total += Number(a.total || 0);
+      ranking[key].attempts++;
+    });
+    const arr = Object.values(ranking).sort((a,b)=>(b.score - a.score) || (b.total - a.total));
+    el.adminLeaderboardList.innerHTML = arr.length ? arr.map((r, i)=>`
+      <div class="leaderboard-row">
+        <div style="display:flex;gap:10px;align-items:center;">
+          <span class="rank-badge">${i+1}</span>
+          <div>
+            <strong>${esc(r.name)}</strong><br>
+            <span class="small">Attempts: ${r.attempts}</span>
+          </div>
+        </div>
+        <div style="font-weight:800;color:#0D1B40;">${r.total ? Math.round((r.score/r.total)*100) : 0}%</div>
+      </div>
+    `).join('') : `<div class="empty-box">No leaderboard data yet.</div>`;
+  }
+
+  async function loadAdminLectures(){
+    await loadAllData();
+    const filter = el.adminLectureFilter.value;
+    const filtered = filter ? state.lectures.filter(l => String(l.lectureDate || '') === filter) : state.lectures;
+    el.adminLectureList.innerHTML = filtered.length ? filtered.map(l=>`
+      <div class="mini-item">
+        <strong>${esc(l.lectureDate || 'No date')} — ${esc(l.title || 'Lecture')}</strong><br>
+        <span class="small">${esc(l.fileName || '')}</span><br>
+        ${l.fileUrl ? `<a href="${l.fileUrl}" target="_blank" rel="noopener" class="calendar-link">Open Lecture</a>` : ''}
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="secondary-btn" type="button" onclick="window.__deleteLectureX('${l.id}')">Delete</button>
+        </div>
+      </div>
+    `).join('') : `<div class="empty-box">No lectures uploaded yet.</div>`;
+  }
+
+  window.__deleteLectureX = async function(id){
+    if(!confirm('Delete this lecture?')) return;
+    await db.collection('lectures').doc(id).delete();
+    await loadAdminLectures();
+    await loadStudentLectures();
+    await refreshAdminDashboard();
+  };
+
+  async function createOrLoadTest(){
+    const title = val('adminTestTitleX');
+    const subject = val('adminTestSubjectX');
+    const chapter = val('adminTestChapterX');
+    if(!title || !subject || !chapter){ setStatus(el.adminTestStatus, 'Fill title, subject and chapter.', true); return; }
+    try{
+      const existing = await db.collection('tests').where('title','==',title).where('subject','==',subject).where('chapter','==',chapter).limit(1).get();
+      let id = '';
+      if(!existing.empty){
+        id = existing.docs[0].id;
+        setStatus(el.adminTestStatus, 'Test loaded successfully ✅');
+      } else {
+        const ref = await db.collection('tests').add({
+          title, subject, chapter,
+          questionCount: 0,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        id = ref.id;
+        setStatus(el.adminTestStatus, 'Test created successfully ✅');
+      }
+      el.adminSelectedTest.value = id;
+      await loadAdminTests();
+      await refreshAdminDashboard();
+      await refreshStudentPractice();
+    }catch(err){ setStatus(el.adminTestStatus, err.message, true); }
+  }
+
+  async function uploadAdminQuestion(){
+    try{
+      const testId = el.adminSelectedTest.value;
+      const title = val('adminTestTitleX');
+      const subject = val('adminTestSubjectX');
+      const chapter = val('adminTestChapterX');
+      const type = el.adminQuestionType.value;
+      if(!testId){ setStatus(el.adminQuestionStatus, 'Create or select a test first.', true); return; }
+      const q = getAdminQuestionData();
+      if(!q.question){ setStatus(el.adminQuestionStatus, 'Question text is required.', true); return; }
+      if((type==='mcq' || type==='multi' || type==='dropdown') && (!q.options || !q.options.length)){ setStatus(el.adminQuestionStatus, 'Add options for this question type.', true); return; }
+      if(type==='drag' && (!Array.isArray(q.pairs) || !q.pairs.length)){ setStatus(el.adminQuestionStatus, 'Drag & Drop pairs JSON is required.', true); return; }
+      if(type==='hotspot' || type==='hotarea'){
+        const imageUrl = await uploadFileIfAny('adminImageFileX', 'tests/images');
+        if(!imageUrl){ setStatus(el.adminQuestionStatus, 'Attach an image for hotspot / hotarea.', true); return; }
+        q.imageUrl = imageUrl;
+      }
+      if(type==='word' || type==='sheet'){
+        const templateUrl = await uploadFileIfAny('adminTemplateFileX', 'tests/templates');
+        if(!templateUrl){ setStatus(el.adminQuestionStatus, 'Attach a template file.', true); return; }
+        q.templateUrl = templateUrl;
+      }
+      await db.collection('questions').add({
+        testId, testTitle:title, subject, chapter, ...q,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      await db.collection('tests').doc(testId).set({
+        title, subject, chapter,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        questionCount: firebase.firestore.FieldValue.increment(1)
+      }, {merge:true});
+      setStatus(el.adminQuestionStatus, 'Question uploaded successfully ✅');
+      el.adminQuestionText.value = '';
+      el.adminExplanation.value = '';
+      renderAdminQuestionFields();
+      await loadAdminTests();
+      await refreshStudentPractice();
+      await refreshAdminDashboard();
+    } catch(err){
+      setStatus(el.adminQuestionStatus, err.message, true);
+    }
+  }
+
+  async function uploadAdminLecture(){
+    const date = val('adminLectureDateX');
+    const title = val('adminLectureTitleX');
+    const input = el.adminLectureFile;
+    if(!date || !title || !input.files || !input.files[0]){ setStatus(el.adminLectureStatus, 'Date, title, and file are required.', true); return; }
+    try{
+      const file = input.files[0];
+      const safe = Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      const ref = storage.ref('lectures/' + safe);
+      await ref.put(file);
+      const fileUrl = await ref.getDownloadURL();
+      await db.collection('lectures').add({
+        lectureDate: date,
+        title,
+        fileName: file.name,
+        fileUrl,
+        uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      setStatus(el.adminLectureStatus, 'Lecture uploaded successfully ✅');
+      el.adminLectureDate.value = '';
+      el.adminLectureTitle.value = '';
+      el.adminLectureFile.value = '';
+      await loadAdminLectures();
+      await loadStudentLectures();
+      await refreshAdminDashboard();
+    }catch(err){ setStatus(el.adminLectureStatus, err.message, true); }
+  }
+
+  async function loadStudentLectures(){
+    await loadAllData();
+    el.studentLectureList.innerHTML = state.lectures.length ? state.lectures.map(l=>`
+      <div class="mini-item">
+        <strong>${esc(l.title || 'Lecture')}</strong><br>
+        <span class="small">${esc(l.lectureDate || '')}</span><br>
+        ${l.fileUrl ? `<a href="${l.fileUrl}" target="_blank" rel="noopener" class="calendar-link">Open Lecture</a>` : ''}
+      </div>
+    `).join('') : `<div class="empty-box">No lectures uploaded yet.</div>`;
+
+    el.studentCalendarList.innerHTML = state.lectures.length ? state.lectures.map(l=>`
+      <div class="calendar-item">
+        <div class="calendar-date">${esc(l.lectureDate || 'No date')}</div>
+        <div class="calendar-title">${esc(l.title || 'Lecture')}</div>
+        ${l.fileUrl ? `<a href="${l.fileUrl}" target="_blank" rel="noopener" class="calendar-link">Open Lecture</a>` : ''}
+      </div>
+    `).join('') : `<div class="empty-box">No lecture calendar items yet.</div>`;
+  }
+
+  async function refreshStudentHome(){
+    await loadAllData();
+    const attempts = state.attempts.filter(a => String(a.userId||'') === String(getCurrentUser()?.uid || ''));
+    const total = attempts.reduce((sum,a)=>sum + Number(a.total || 0), 0);
+    const score = attempts.reduce((sum,a)=>sum + Number(a.score || 0), 0);
+    const avg = total ? Math.round((score/total)*100) : 0;
+    const best = attempts.length ? Math.max(...attempts.map(a => Number(a.percentage || 0))) : 0;
+    el.studentStatAttempts.textContent = attempts.length;
+    el.studentStatAvg.textContent = avg + '%';
+    el.studentStatBest.textContent = best + '%';
+    el.studentPerformance.innerHTML = attempts.length ? attempts.map(a=>`
+      <div class="mini-item">
+        <strong>${esc(a.testTitle || 'Test')}</strong><br>
+        <span class="small">${esc(a.subject || 'General')} · ${a.percentage || 0}%</span>
+      </div>
+    `).join('') : `<div class="empty-box">No tests attempted yet.</div>`;
+    el.studentRecentAttempts.innerHTML = attempts.slice(0,5).map(a=>`
+      <div class="mini-item">
+        <strong>${esc(a.testTitle || 'Test')}</strong><br>
+        <span class="small">${esc(a.subject || 'General')} · ${a.score}/${a.total} (${a.percentage || 0}%)</span>
+      </div>
+    `).join('') || `<div class="empty-box">No attempts yet.</div>`;
+    el.studentAllAttempts.innerHTML = attempts.map(a=>`
+      <div class="mini-item">
+        <strong>${esc(a.testTitle || 'Test')}</strong><br>
+        <span class="small">${esc(a.subject || 'General')} · ${esc(a.chapter || 'General')}</span><br>
+        <span class="small">Score: ${a.score}/${a.total} (${a.percentage || 0}%)</span><br>
+        <span class="small">${fmtDate(a.createdAt)}</span>
+      </div>
+    `).join('') || `<div class="empty-box">No attempts yet.</div>`;
+    el.studentLeaderboardList.innerHTML = '';
+  }
+
+  async function loadLeaderboard(){
+    await loadAllData();
+    const ranking = {};
+    state.attempts.forEach(a=>{
+      const key = String(a.userId || a.userEmail || 'unknown');
+      if(!ranking[key]) ranking[key] = { name: a.userName || a.userEmail || 'Student', score:0, total:0, attempts:0 };
+      ranking[key].score += Number(a.score || 0);
+      ranking[key].total += Number(a.total || 0);
+      ranking[key].attempts++;
+    });
+    const arr = Object.values(ranking).sort((a,b)=>(b.score - a.score) || (b.total - a.total));
+    const html = arr.length ? arr.map((r, i)=>`
+      <div class="leaderboard-row">
+        <div style="display:flex;gap:10px;align-items:center;">
+          <span class="rank-badge">${i+1}</span>
+          <div>
+            <strong>${esc(r.name)}</strong><br>
+            <span class="small">Attempts: ${r.attempts}</span>
+          </div>
+        </div>
+        <div style="font-weight:800;color:#0D1B40;">${r.total ? Math.round((r.score/r.total)*100) : 0}%</div>
+      </div>
+    `).join('') : `<div class="empty-box">No leaderboard data yet.</div>`;
+    el.studentLeaderboardList.innerHTML = html;
+    el.adminLeaderboardList.innerHTML = html;
+  }
+
+  async function populateStudents(){
+    await loadAllData();
+    const students = state.users.filter(u => String(u.role || 'student') === 'student' || !u.role);
+    el.adminStudentSelect.innerHTML = students.length ? students.map(u => `<option value="${u.id}">${esc(u.name || u.email || u.id)}</option>`).join('') : `<option value="">No students yet</option>`;
+    if(students[0]) {
+      el.adminStudentSelect.value = students[0].id;
+      renderAdminStudent(students[0].id);
+    } else {
+      el.adminStudentSummary.innerHTML = `<div class="empty-box">No students available.</div>`;
+      el.adminStudentPaperBreakdown.innerHTML = `<div class="empty-box">No student selected.</div>`;
+    }
+  }
+
+  function renderAdminStudent(userId){
+    const user = state.users.find(u=>u.id===userId);
+    if(!user){
+      el.adminStudentSummary.innerHTML = `<div class="empty-box">No student selected.</div>`;
+      el.adminStudentPaperBreakdown.innerHTML = '';
+      return;
+    }
+    const attempts = state.attempts.filter(a => String(a.userId || '') === String(userId));
+    const totalScore = attempts.reduce((sum,a)=>sum + Number(a.score || 0), 0);
+    const totalMarks = attempts.reduce((sum,a)=>sum + Number(a.total || 0), 0);
+    const avg = totalMarks ? Math.round((totalScore/totalMarks)*100) : 0;
+    el.adminStudentSummary.innerHTML = `
+      <div class="app-grid-2">
+        <div class="metric"><div class="n">${attempts.length}</div><div class="l">Attempts</div></div>
+        <div class="metric"><div class="n">${avg}%</div><div class="l">Average</div></div>
+      </div>
+      <div class="hr"></div>
+      <div class="empty-box">Student: <strong>${esc(user.name || user.email || 'Student')}</strong></div>
+    `;
+    const byPaper = {};
+    attempts.forEach(a=>{
+      const paper = a.subject || 'General';
+      if(!byPaper[paper]) byPaper[paper] = {attempts:0, score:0, total:0};
+      byPaper[paper].attempts++;
+      byPaper[paper].score += Number(a.score || 0);
+      byPaper[paper].total += Number(a.total || 0);
+    });
+    el.adminStudentPaperBreakdown.innerHTML = Object.keys(byPaper).length ? Object.keys(byPaper).sort().map(p=>`
+      <div class="mini-item">
+        <strong>${esc(p)}</strong><br>
+        <span class="small">Attempts: ${byPaper[p].attempts} · Marks: ${byPaper[p].score}/${byPaper[p].total}</span>
+      </div>
+    `).join('') : `<div class="empty-box">No attempts yet for this student.</div>`;
+  }
+
+  async function loadStudentTests(){
+    await loadAllData();
+    const grouped = {};
+    state.tests.forEach(t => {
+      const subject = t.subject || 'Other';
+      const chapter = t.chapter || 'General';
+      if(!grouped[subject]) grouped[subject] = {};
+      if(!grouped[subject][chapter]) grouped[subject][chapter] = [];
+      grouped[subject][chapter].push(t);
+    });
+    const subjects = Object.keys(grouped).sort((a,b)=>a.localeCompare(b));
+    if(!subjects.length){
+      const quickFallback = Array.isArray(state.tests) && state.tests.length ? state.tests.map(t=>`<div class="test-card"><strong>${esc(t.title || 'Test')}</strong><br><span class="small">${esc(t.subject || 'Other')} · ${esc(t.chapter || 'General')}</span></div>`).join('') : '';
+      if(quickFallback){
+        el.studentTestList.innerHTML = quickFallback;
+        el.studentPracticeStatus.textContent = '';
+        return;
+      }
+      el.studentTestList.innerHTML = `<div class="empty-box">No tests available yet.</div>`;
+      el.studentPracticeStatus.textContent = 'No practice tests yet.';
+      return;
+    }
+    el.studentPracticeStatus.textContent = '';
+    el.studentTestList.innerHTML = '';
+    subjects.forEach((subject, sIdx) => {
+      const subjectCard = document.createElement('div');
+      subjectCard.className = 'app-card';
+      subjectCard.innerHTML = `<div class="subject-title">${esc(subject)}</div>`;
+      Object.keys(grouped[subject]).sort((a,b)=>a.localeCompare(b)).forEach((chapter, cIdx)=>{
+        const chapterId = `chapter-${String(subject)}-${String(chapter)}`.replace(/[^a-zA-Z0-9_-]/g,'-');
+        const chapterWrap = document.createElement('div');
+        const openDefault = sIdx === 0 && cIdx === 0;
+        chapterWrap.innerHTML = `
+          <div class="chapter-head" onclick="window.__toggleChapterX('${chapterId}')">
+            <span>${openDefault ? '▼' : '▶'} ${esc(chapter)}</span>
+            <span class="small" style="color:#dbe8ff;">${grouped[subject][chapter].length} test(s)</span>
+          </div>
+          <div id="${chapterId}" class="chapter-body" style="display:${openDefault ? 'block' : 'none'}" data-test-ids='${JSON.stringify(grouped[subject][chapter].map(t=>t.id))}'></div>
+        `;
+        subjectCard.appendChild(chapterWrap);
+        const body = chapterWrap.querySelector('#' + chapterId);
+        grouped[subject][chapter].forEach(test => {
+          const qCount = state.tests.find(x=>x.id===test.id)?.questionCount || 0;
+          const card = document.createElement('div');
+          card.className = 'test-card';
+          card.innerHTML = `
+            <strong>${esc(test.title || 'Test')}</strong><br>
+            <span class="small">${esc(test.subject || '')}${test.chapter ? ' · ' + esc(test.chapter) : ''}</span><br>
+            <span class="small">${qCount} questions</span><br>
+            <span class="small">Unlimited retakes enabled</span>
+            <div class="btn-row">
+              <button class="primary-btn" type="button" onclick="window.__startTestX('${test.id}')">Start Test</button>
+            </div>
+            <div id="studentAttempts-${test.id}" class="attempts-box"></div>
+          `;
+          body.appendChild(card);
+        });
+      });
+      el.studentTestList.appendChild(subjectCard);
+    });
+    refreshVisibleAttemptBoxes();
+  }
+
+  window.__toggleChapterX = async function(id){
+    const body = document.getElementById(id);
+    if(!body) return;
+    const isOpen = body.style.display !== 'none' && body.style.display !== '';
+    body.style.display = isOpen ? 'none' : 'block';
+    if(!isOpen) populateChapterAttempts(id);
+  };
+
+  function populateChapterAttempts(chapterId){
+    const body = document.getElementById(chapterId);
+    if(!body) return;
+    let ids = [];
+    try{ ids = JSON.parse(body.dataset.testIds || '[]'); }catch(_){}
+    ids.forEach(renderAttemptsForTest);
+  }
+  function refreshVisibleAttemptBoxes(){
+    document.querySelectorAll('.chapter-body').forEach(elm => { if(elm.style.display !== 'none') populateChapterAttempts(elm.id); });
+  }
+  function renderAttemptsForTest(testId){
+    const box = document.getElementById(`studentAttempts-${testId}`);
+    if(!box) return;
+    const attempts = state.attempts.filter(a => String(a.testId || '') === String(testId) && String(a.userId || '') === String(getCurrentUser()?.uid || ''));
+    if(!attempts.length){
+      box.innerHTML = `<div class="small">No attempts yet. You can retry anytime.</div>`;
+      return;
+    }
+    const best = attempts.reduce((m,a)=>Math.max(m, Number(a.percentage || 0)), 0);
+    box.innerHTML = `
+      <div class="small"><strong>Attempts:</strong> ${attempts.length} • <strong>Best:</strong> ${best}%</div>
+      ${attempts.slice(0,3).map(a=>`
+        <div class="attempt-item">
+          <strong>${Number(a.percentage || 0)}%</strong> — ${a.score}/${a.total}<br>
+          <span class="small">${fmtDate(a.createdAt)}</span>
+        </div>
+      `).join('')}
+    `;
+  }
+
+  window.__startTestX = async function(testId){
+    try{
+      state._testFinished = false;
+      console.log('🔥 startTestX triggered', testId);
+      const testDoc = await db.collection('tests').doc(testId).get().catch(()=>null);
+      const qSnap = await db.collection('questions').where('testId','==',testId).get().catch(()=>null);
+      const questions = (qSnap ? qSnap.docs : []).map(d=>({id:d.id, ...d.data()})).sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
+      if(!testDoc && !questions.length){ alert('Test not found'); return; }
+      if(!questions.length){ alert('No questions found for this test'); return; }
+
+      const firstQ = questions[0] || {};
+      state.currentTest = {
+        ...(testDoc && testDoc.data ? testDoc.data() : {}),
+        id:testId,
+        title:(testDoc && testDoc.data && testDoc.data().title) || firstQ.testTitle || firstQ.title || 'Practice Test',
+        subject:(testDoc && testDoc.data && testDoc.data().subject) || firstQ.subject || 'General',
+        chapter:(testDoc && testDoc.data && testDoc.data().chapter) || firstQ.chapter || 'General',
+        questions
+      };
+      state.currentIndex = 0;
+      // ⏱ Start Timer
+state.startTime = Date.now();
+startTimerUI();
+startTimerUI();
+      state.currentScore = 0;
+      state.currentResponses = [];
+      state.selectedChoice = null;
+      state.selectedMulti = [];
+      state.selectedDropdown = '';
+      state.fillAnswer = '';
+      state.manualAnswer = '';
+      state.hotspotText = '';
+      state.hotspotClick = null;
+      state.dragMap = {};
+      state.submitted = false;
+      el.overlayTitle.textContent = state.currentTest.title || 'Practice Test';
+      document.querySelector('.test-overlay').classList.add('show');
+      document.body.style.overflow = 'hidden';
+      renderQuestion();
+      attachTestButtons();
+    }catch(err){ console.error(err); alert('Could not open test'); }
+  };
+
+  function currentQuestion(){
+    return state.currentTest && Array.isArray(state.currentTest.questions) ? state.currentTest.questions[state.currentIndex] : null;
+  }
+  function setProgress(){
+    const total = state.currentTest?.questions?.length || 1;
+    const current = Math.min(state.currentIndex + 1, total);
+    el.overlayProgress.textContent = `Q ${current} / ${total}`;
+    el.progressBar.style.width = `${(current/total)*100}%`;
+  }
+  function clearFeedback(){
+    el.questionFeedback.classList.add('hidden');
+    el.questionFeedback.innerHTML = '';
+  }
+  function setFeedback(html, kind='info'){
+    el.questionFeedback.classList.remove('hidden');
+    el.questionFeedback.innerHTML = html;
+    el.questionFeedback.style.borderColor = kind==='correct' ? '#10b981' : kind==='wrong' ? '#ef4444' : '#e5e7eb';
+  }
+  function setActionState(submitted=false){
+    el.nextBtn.classList.toggle('hidden', !submitted);
+  }
+  function toggleInteractivity(enabled){
+    const card = document.getElementById('questionCardX');
+    if(!card) return;
+    card.querySelectorAll('input,select,textarea,button.option-btn').forEach(node=>{
+      if(['submitBtnX','clearBtnX','nextBtnX'].includes(node.id)) return;
+      node.disabled = !enabled;
+    });
+  }
+  function normalizeMultiCorrect(correct){
+    if(Array.isArray(correct)) return correct.map(Number).filter(v=>!Number.isNaN(v)).sort((a,b)=>a-b);
+    if(typeof correct === 'string') return correct.split(',').map(v=>Number(v.trim())).filter(v=>!Number.isNaN(v)).sort((a,b)=>a-b);
+    return [];
+  }
+  function compareSingle(q, idx){
+    if(typeof q.correct === 'number') return Number(idx) === Number(q.correct);
+    const opt = q.options?.[idx];
+    return String(opt || '').trim().toLowerCase() === String(q.correct || '').trim().toLowerCase();
+  }
+  function getCorrectOptionLabels(q){
+    const opts = q.options || [];
+    if(Array.isArray(q.correct)) return q.correct.map(i=>opts[i]).filter(Boolean);
+    if(typeof q.correct === 'number') return [opts[q.correct]].filter(Boolean);
+    if(typeof q.correct === 'string') return [q.correct];
+    return [];
+  }
+
+  function renderQuestion(){
+    const q = currentQuestion();
+    if(!q){ el.questionArea.innerHTML=''; return; }
+    state.submitted = false;
+    clearFeedback();
+    setActionState(false);
+    toggleInteractivity(true);
+    setProgress();
+    const type = String(q.type || 'mcq').toLowerCase();
+    let html = `
+      <div class="question-card" id="questionCardX">
+        <div class="question-meta">
+          <div>
+            <h3 class="question-title">Question ${state.currentIndex + 1}</h3>
+            <div class="question-sub">${esc(state.currentTest.title || '')}${state.currentTest.subject ? ' · ' + esc(state.currentTest.subject) : ''}</div>
+          </div>
+          <div class="question-sub">Type: ${esc(type)}</div>
+        </div>
+        <div class="question-content">
+          <p style="margin-top:0">${esc(q.question || q.q || '')}</p>
+          ${q.explanation ? `<div class="feedback"><strong>Explanation:</strong> ${esc(q.explanation)}</div>` : ''}
+          <div class="hr"></div>
+    `;
+
+    if(type === 'mcq'){
+      html += `<div id="optionAreaX">${(q.options || []).map((opt,i)=>`
+        <button type="button" class="ghost-btn option-btn" style="display:block;width:100%;text-align:left;margin:8px 0;${state.selectedChoice===i ? 'background:#dbe8ff;border:1px solid #1e3c72' : ''}" onclick="window.__pickSingleX(${i})">${esc(opt)}</button>
+      `).join('')}</div>`;
+    } else if(type === 'dropdown'){
+      html += `<select id="dropdownAnswerX" onchange="window.__setDropdownX(this.value)">
+        <option value="">— Choose an option —</option>
+        ${(q.options || []).map((opt,i)=>`<option value="${i}" ${String(state.selectedDropdown)===String(i) ? 'selected' : ''}>${esc(opt)}</option>`).join('')}
+      </select>`;
+    } else if(type === 'multi'){
+      html += `<div id="multiAreaX">${(q.options || []).map((opt,i)=>`
+        <label style="display:block;margin:8px 0;">
+          <input type="checkbox" class="multi-check" value="${i}" ${state.selectedMulti.includes(i) ? 'checked' : ''} onchange="window.__syncMultiX()"> ${esc(opt)}
+        </label>
+      `).join('')}</div>`;
+    } else if(type === 'fill'){
+      html += `<input type="text" id="fillInputX" placeholder="Type your answer" value="${esc(state.fillAnswer)}" oninput="window.__stateFillX(this.value)">`;
+    } else if(type === 'drag'){
+      const pairs = Array.isArray(q.pairs) ? q.pairs : [];
+      html += `
+        <div class="drag-wrap">
+          <div class="drag-box">
+            <strong>Drag items</strong>
+            <div id="dragItemsX">${pairs.map(p=>`<div class="drag-item" draggable="true" data-drag="${esc(p.drag)}">${esc(p.drag)}</div>`).join('')}</div>
+          </div>
+          <div class="drop-box">
+            <strong>Drop targets</strong>
+            <div id="dropTargetsX">${pairs.map(p=>`<div class="drop-slot" data-drop="${esc(p.drop)}">Drop here for: ${esc(p.drop)}</div>`).join('')}</div>
+          </div>
+        </div>
+        <div class="small" style="margin-top:10px;">Drag each item to the matching target, then submit.</div>
+      `;
+    } else if(type === 'hotspot' || type === 'hotarea'){
+      html += `
+        ${q.imageUrl ? `<img src="${q.imageUrl}" class="hotspot-image" id="hotspotImgX" alt="Hot spot question">` : `<div class="empty-box">No image attached.</div>`}
+        <div class="small" style="margin-top:10px;">Click on the image or type coordinates.</div>
+        <input type="text" id="hotspotAnswerX" placeholder="Optional: x,y or area name" style="margin-top:10px;" value="${esc(state.hotspotText)}" oninput="window.__stateHotspotTextX(this.value)">
+        <div class="small" style="margin-top:8px;">Marked: ${state.hotspotClick ? `${state.hotspotClick.x}, ${state.hotspotClick.y}` : 'none'}</div>
+      `;
+    } else if(type === 'otcase'){
+      html += `
+        <div class="mini-item" style="background:#f8fbff">
+          <strong>Case Scenario</strong>
+          <div class="small" style="margin-top:8px;white-space:pre-wrap;">${esc(q.caseScenario || q.scenario || '')}</div>
+        </div>
+        <textarea id="manualAnswerX" placeholder="Write your answer here">${esc(state.manualAnswer)}</textarea>
+      `;
+    } else {
+      html += `${q.templateUrl ? `<a href="${q.templateUrl}" target="_blank" rel="noopener">Open Template</a>` : ''}<textarea id="manualAnswerX" placeholder="Write your answer here">${esc(state.manualAnswer)}</textarea>`;
+    }
+    html += `</div></div>`;
+    el.questionArea.innerHTML = html;
+    if(type === 'drag') initDragAndDrop();
+    if((type==='hotspot' || type==='hotarea') && document.getElementById('hotspotImgX')){
+      document.getElementById('hotspotImgX').addEventListener('click', captureHotspot);
+    }
+    attachTestButtons();
+  }
+
+  window.__stateFillX = function(v){ state.fillAnswer = v; };
+  window.__stateHotspotTextX = function(v){ state.hotspotText = v; };
+  window.__setDropdownX = function(v){ state.selectedDropdown = v; };
+  window.__syncMultiX = function(){ state.selectedMulti = Array.from(document.querySelectorAll('.multi-check')).filter(x=>x.checked).map(x=>Number(x.value)); };
+  window.__pickSingleX = function(index){ if(state.submitted) return; state.selectedChoice = index; renderQuestion(); };
+  function initDragAndDrop(){
+    const dragItems = document.querySelectorAll('.drag-item');
+    const dropSlots = document.querySelectorAll('.drop-slot');
+    state.dragMap = {};
+    dragItems.forEach(item=> item.addEventListener('dragstart', e=> e.dataTransfer.setData('text/plain', item.dataset.drag || '')));
+    dropSlots.forEach(slot=>{
+      slot.addEventListener('dragover', e=> e.preventDefault());
+      slot.addEventListener('drop', e=>{
+        e.preventDefault();
+        const dragged = e.dataTransfer.getData('text/plain');
+        if(!dragged) return;
+        slot.textContent = `${slot.dataset.drop}: ${dragged}`;
+        state.dragMap[slot.dataset.drop] = dragged;
+      });
+    });
+  }
+  function captureHotspot(e){
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.round(e.clientX - rect.left);
+    const y = Math.round(e.clientY - rect.top);
+    state.hotspotClick = {x, y};
+    state.hotspotText = `${x}, ${y}`;
+    renderQuestion();
+  }
+
+  window.submitCurrentAnswer = async function(){
+    console.log('🔥 submitCurrentAnswer triggered', state.currentIndex, state.currentTest?.id);
+    if(state.submitted) return;
+    const q = currentQuestion();
+    if(!q) return;
+    const type = String(q.type || 'mcq').toLowerCase();
+
+    let isCorrect = null;
+    let userText = '';
+    let feedback = '';
+
+    if(type === 'mcq'){
+      if(state.selectedChoice === null || state.selectedChoice === undefined){ alert('Choose an option first.'); return; }
+      isCorrect = compareSingle(q, state.selectedChoice);
+      if(isCorrect) state.currentScore++;
+      userText = q.options?.[state.selectedChoice] ?? '';
+      feedback = isCorrect
+        ? `✅ Correct${q.explanation ? `<br><br><strong>Explanation:</strong> ${esc(q.explanation)}` : ''}`
+        : `❌ Wrong<br><strong>Correct:</strong> ${esc(getCorrectOptionLabels(q).join(', '))}${q.explanation ? `<br><br><strong>Explanation:</strong> ${esc(q.explanation)}` : ''}`;
+    } else if(type === 'dropdown'){
+      if(state.selectedDropdown === '' || state.selectedDropdown === null || state.selectedDropdown === undefined){ alert('Choose an option first.'); return; }
+      const idx = Number(state.selectedDropdown);
+      isCorrect = compareSingle(q, idx);
+      if(isCorrect) state.currentScore++;
+      userText = q.options?.[idx] ?? '';
+      feedback = isCorrect
+        ? `✅ Correct${q.explanation ? `<br><br><strong>Explanation:</strong> ${esc(q.explanation)}` : ''}`
+        : `❌ Wrong<br><strong>Correct:</strong> ${esc(getCorrectOptionLabels(q).join(', '))}${q.explanation ? `<br><br><strong>Explanation:</strong> ${esc(q.explanation)}` : ''}`;
+    } else if(type === 'multi'){
+      const selected = Array.from(document.querySelectorAll('.multi-check')).filter(elm=>elm.checked).map(elm=>Number(elm.value)).sort((a,b)=>a-b);
+      if(!selected.length){ alert('Choose at least one option first.'); return; }
+      const correct = normalizeMultiCorrect(q.correct);
+      isCorrect = selected.length === correct.length && selected.every((v,i)=>v===correct[i]);
+      if(isCorrect) state.currentScore++;
+      userText = selected.map(i=>q.options?.[i]).filter(Boolean).join(', ');
+      feedback = isCorrect
+        ? `✅ Correct${q.explanation ? `<br><br><strong>Explanation:</strong> ${esc(q.explanation)}` : ''}`
+        : `❌ Wrong<br><strong>Correct answers:</strong> ${esc(correct.map(i=>q.options?.[i]).filter(Boolean).join(', '))}${q.explanation ? `<br><br><strong>Explanation:</strong> ${esc(q.explanation)}` : ''}`;
+    } else if(type === 'fill'){
+      const answer = (document.getElementById('fillInputX')?.value || '').trim();
+      if(!answer){ alert('Type your answer first.'); return; }
+      const expected = String(q.answer || '').trim();
+      isCorrect = answer.toLowerCase() === expected.toLowerCase();
+      if(isCorrect) state.currentScore++;
+      userText = answer;
+      feedback = isCorrect
+        ? `✅ Correct${q.explanation ? `<br><br><strong>Explanation:</strong> ${esc(q.explanation)}` : ''}`
+        : `❌ Wrong<br><strong>Correct:</strong> ${esc(expected)}${q.explanation ? `<br><br><strong>Explanation:</strong> ${esc(q.explanation)}` : ''}`;
+    } else if(type === 'drag'){
+      const pairs = Array.isArray(q.pairs) ? q.pairs : [];
+      isCorrect = true;
+      pairs.forEach(p=>{ if(String(state.dragMap[String(p.drop)] || '') !== String(p.drag)) isCorrect = false; });
+      if(isCorrect) state.currentScore++;
+      userText = JSON.stringify(state.dragMap);
+      feedback = isCorrect
+        ? `✅ Correct${q.explanation ? `<br><br><strong>Explanation:</strong> ${esc(q.explanation)}` : ''}`
+        : `❌ Wrong${q.explanation ? `<br><br><strong>Explanation:</strong> ${esc(q.explanation)}` : ''}`;
+    } else if(type === 'hotspot' || type === 'hotarea'){
+      const typed = (document.getElementById('hotspotAnswerX')?.value || '').trim();
+      const expected = String(q.coords || '').trim();
+      if(!typed && !state.hotspotClick){ alert('Mark or type an answer first.'); return; }
+      let same = false;
+      if(state.hotspotClick && expected){
+        const coords = expected.toLowerCase().replace(/\s+/g,'');
+        const m = coords.match(/x:?(-?\d+(\.\d+)?),?y:?(-?\d+(\.\d+)?)/);
+        if(m){
+          const ex = {x:Number(m[1]), y:Number(m[3])};
+          same = Math.abs(state.hotspotClick.x - ex.x) <= 25 && Math.abs(state.hotspotClick.y - ex.y) <= 25;
+        }
+      } else if(typed){
+        same = typed.toLowerCase() === expected.toLowerCase();
+      }
+      isCorrect = same;
+      if(same) state.currentScore++;
+      userText = typed || `${state.hotspotClick?.x}, ${state.hotspotClick?.y}`;
+      feedback = same
+        ? `✅ Submitted${q.explanation ? `<br><br><strong>Explanation:</strong> ${esc(q.explanation)}` : ''}`
+        : `❌ Not matched${q.explanation ? `<br><br><strong>Explanation:</strong> ${esc(q.explanation)}` : ''}`;
+    } else {
+      const ans = (document.getElementById('manualAnswerX')?.value || '').trim();
+      if(!ans){ alert('Write an answer first.'); return; }
+      userText = ans;
+      feedback = `✅ Submitted for review<br><strong>Reference answer:</strong> ${esc(q.caseAnswer || q.templateAnswer || q.answer || 'Submitted for review')}${q.explanation ? `<br><br><strong>Explanation:</strong> ${esc(q.explanation)}` : ''}`;
+    }
+
+    state.submitted = true;
+    setActionState(true);
+    toggleInteractivity(false);
+    setFeedback(feedback, isCorrect === true ? 'correct' : isCorrect === false ? 'wrong' : 'info');
+    state.currentResponses.push({
+      index: state.currentIndex,
+      type,
+      selected: userText,
+      correct: q.correct ?? q.answer ?? q.caseAnswer ?? q.templateAnswer ?? '',
+      isCorrect
+    });
+
+    const isLastQuestion = state.currentIndex >= (state.currentTest.questions.length - 1);
+    if(isLastQuestion){
+      setTimeout(() => {
+        if(!state._testFinished) finishTest();
+      }, 120);
+    }
+  };
+
+  window.clearCurrentAnswer = function(){
+    state.selectedChoice = null;
+    state.selectedMulti = [];
+    state.selectedDropdown = '';
+    state.fillAnswer = '';
+    state.manualAnswer = '';
+    state.hotspotText = '';
+    state.hotspotClick = null;
+    state.dragMap = {};
+    state.submitted = false;
+    clearFeedback();
+    renderQuestion();
+  };
+
+  window.nextQuestion = function(){
+    if(!state.submitted) return;
+    state.currentIndex++;
+    if(state.currentIndex < state.currentTest.questions.length){
+      state.selectedChoice = null;
+      state.selectedMulti = [];
+      state.selectedDropdown = '';
+      state.fillAnswer = '';
+      state.manualAnswer = '';
+      state.hotspotText = '';
+      state.hotspotClick = null;
+      state.dragMap = {};
+      state.submitted = false;
+      el.nextBtn.classList.add('hidden');
+      renderQuestion();
+    } else {
+      finishTest();
+    }
+  };
+  async function saveAttempt(){
+    console.log('🚀 saveAttempt CALLED');
+    try{
+     const user = state.currentUser || auth.currentUser || firebase.auth().currentUser;
+
+console.log("🔥 Firebase user:", user);
+if(!user){
+  console.error("❌ No Firebase user — login not working");
+  alert("Login expired. Please login again.");
+  return;
+}
+
+if(!state.currentTest){
+  console.error("❌ No test loaded");
+  return;
+}
+      const payload = {
+        userId: user.uid,
+        userEmail: user.email || '',
+        userName: user.displayName || user.email || 'Student',
+        testId: state.currentTest.id,
+        testTitle: state.currentTest.title || 'Test',
+        subject: state.currentTest.subject || 'General',
+        chapter: state.currentTest.chapter || 'General',
+        score: Number(state.currentScore || 0),
+        total: Number(state.currentTest.questions?.length || 0),
+        percentage: Number(state.currentTest.questions?.length ? Math.round((Number(state.currentScore || 0) / Number(state.currentTest.questions.length)) * 100) : 0),
+        responses: Array.isArray(state.currentResponses) ? state.currentResponses : [],
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      console.log('💾 Saving attempt payload:', payload);
+      await db.collection('attempts').add(payload);
+      console.log('✅ Attempt saved successfully');
+    } catch(err){
+      console.error('❌ Error saving attempt:', err);
+      throw err;
+    }
+  }
+
+  async function finishTest(){
+    clearInterval(window.testTimerInterval);
+
+const endTime = Date.now();
+state.timeTaken = Math.floor((endTime - state.startTime)/1000);
+
+try{
+  await saveAttempt();
+  console.log("⏱ Time saved:", state.timeTaken);
+}catch(err){
+  console.error(err);
+}
+    el.questionArea.innerHTML = `
+      <div class="question-card">
+        <h2 style="font-family:'Playfair Display',serif;color:#0D1B40;">Test Completed 🎉</h2>
+        <p><strong>Score:</strong> ${state.currentScore}/${state.currentTest.questions.length}</p>
+        <div class="results-box" style="display:grid;gap:10px;margin-top:14px;">
+          ${state.currentResponses.map(r=>`
+            <div class="mini-item">
+              <strong>Q${r.index + 1}</strong><br>
+              <span class="small">${r.isCorrect === null ? 'Submitted for review' : (r.isCorrect ? 'Correct' : 'Wrong')}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    el.questionFeedback.classList.add('hidden');
+    el.clearBtn.classList.add('hidden');
+    el.submitBtn.classList.add('hidden');
+    el.nextBtn.textContent = 'Close';
+    el.nextBtn.classList.remove('hidden');
+    el.nextBtn.onclick = closeTestOverlay;
+    el.overlayProgress.textContent = 'Done';
+    el.progressBar.style.width = '100%';
+    await loadAllData(true);
+    await loadStudentHomeData();
+    await refreshStudentPractice();
+    await loadLeaderboardsAll();
+  }
+
+  function closeTestOverlay(){
+    hide(el.testOverlay);
+    document.body.style.overflow = '';
+    el.clearBtn.classList.remove('hidden');
+    el.submitBtn.classList.remove('hidden');
+    el.nextBtn.classList.add('hidden');
+    el.nextBtn.textContent = 'Next';
+    el.nextBtn.onclick = nextQuestion;
+    el.questionFeedback.classList.add('hidden');
+    el.questionFeedback.innerHTML = '';
+    el.questionArea.innerHTML = '';
+  }
+
+  async function loadStudentHomeData(){
+    await loadAllData();
+    const attempts = state.attempts.filter(a => String(a.userId || '') === String(getCurrentUser()?.uid || ''));
+    const total = attempts.reduce((sum,a)=>sum + Number(a.total || 0), 0);
+    const score = attempts.reduce((sum,a)=>sum + Number(a.score || 0), 0);
+    const avg = total ? Math.round((score/total)*100) : 0;
+    const best = attempts.length ? Math.max(...attempts.map(a=>Number(a.percentage || 0))) : 0;
+    el.studentStatAttempts.textContent = attempts.length;
+    el.studentStatAvg.textContent = avg + '%';
+    el.studentStatBest.textContent = best + '%';
+    el.studentPerformance.innerHTML = attempts.length ? attempts.slice(0,5).map(a=>`
+      <div class="mini-item">
+        <strong>${esc(a.testTitle || 'Test')}</strong><br>
+        <span class="small">${esc(a.subject || 'General')} · ${a.percentage || 0}%</span>
+      </div>
+    `).join('') : `<div class="empty-box">No tests attempted yet.</div>`;
+    el.studentRecentAttempts.innerHTML = attempts.slice(0,5).map(a=>`
+      <div class="mini-item">
+        <strong>${esc(a.testTitle || 'Test')}</strong><br>
+        <span class="small">${esc(a.subject || 'General')} · ${a.score}/${a.total} (${a.percentage || 0}%)</span>
+      </div>
+    `).join('') || `<div class="empty-box">No attempts yet.</div>`;
+    el.studentAllAttempts.innerHTML = attempts.map(a=>`
+      <div class="mini-item">
+        <strong>${esc(a.testTitle || 'Test')}</strong><br>
+        <span class="small">${esc(a.subject || 'General')} · ${esc(a.chapter || 'General')}</span><br>
+        <span class="small">Score: ${a.score}/${a.total} (${a.percentage || 0}%)</span><br>
+        <span class="small">${fmtDate(a.createdAt)}</span>
+      </div>
+    `).join('') || `<div class="empty-box">No attempts yet.</div>`;
+  }
+
+  async function refreshStudentPractice() {
+    await loadAllData(true);
+
+    const container = el.studentTestList;
+    const status = el.studentPracticeStatus;
+    if (!container) return;
+
+    let qDocs = [];
+    try {
+      const qSnap = await db.collection('questions').get();
+      qDocs = qSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (err) {
+      console.warn('questions unavailable for student practice', err);
+    }
+
+    let dbTests = [];
+    try {
+      const tSnap = await db.collection('tests').get();
+      dbTests = tSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (err) {
+      console.warn('tests unavailable for student practice', err);
+    }
+
+    const synthTests = synthesizeTestsFromQuestions(qDocs);
+
+    const merged = new Map();
+    [...dbTests, ...synthTests].forEach(t => {
+      const id = normalizeTestId(t.id);
+      if (!id) return;
+
+      const prev = merged.get(id) || {};
+      merged.set(id, {
+        ...prev,
+        ...t,
+        id,
+        questionCount: Math.max(
+          Number(prev.questionCount || 0) + Number(t.questionCount || 0),
+          Number(t.questionCount || 0),
+          1
+        )
+      });
+    });
+
+    const testsBase = [...merged.values()];
+
+    if (!testsBase.length) {
+      container.innerHTML = '<div class="empty-box">No tests uploaded yet.</div>';
+      if (status) status.textContent = 'No practice tests yet.';
+      return;
+    }
+
+    const grouped = {};
+    testsBase.forEach(t => {
+      if (!t.id) return;
+      const subject = t.subject || 'Other';
+      const chapter = t.chapter || 'General';
+      if (!grouped[subject]) grouped[subject] = {};
+      if (!grouped[subject][chapter]) grouped[subject][chapter] = [];
+      grouped[subject][chapter].push(t);
+    });
+
+    const subjects = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
+    if (!subjects.length) {
+      container.innerHTML = '<div class="empty-box">No tests uploaded yet.</div>';
+      if (status) status.textContent = 'No practice tests yet.';
+      return;
+    }
+
+    if (status) status.textContent = '';
+    container.innerHTML = '';
+
+    subjects.forEach((subject, sIdx) => {
+      const subjectCard = document.createElement('div');
+      subjectCard.className = 'app-card';
+      subjectCard.innerHTML = `<div class="subject-title">${esc(subject)}</div>`;
+
+      Object.keys(grouped[subject]).sort((a, b) => a.localeCompare(b)).forEach((chapter, cIdx) => {
+        const chapterId = `chapter-${slugify(subject)}-${slugify(chapter)}`;
+        const chapterWrap = document.createElement('div');
+        const openDefault = sIdx === 0 && cIdx === 0;
+
+        chapterWrap.innerHTML = `
+          <div class="chapter-head" onclick="window.__toggleChapterStudentX('${chapterId}')">
+            <span>${openDefault ? '▼' : '▶'} ${esc(chapter)}</span>
+            <span class="small" style="color:#dbe8ff;">${grouped[subject][chapter].length} test(s)</span>
+          </div>
+          <div id="${chapterId}" class="chapter-body" style="display:${openDefault ? 'block' : 'none'}" data-test-ids='${JSON.stringify(grouped[subject][chapter].map(t => t.id))}'></div>
+        `;
+
+        subjectCard.appendChild(chapterWrap);
+        const body = chapterWrap.querySelector('#' + chapterId);
+
+        grouped[subject][chapter].forEach(test => {
+          const card = document.createElement('div');
+          card.className = 'test-card';
+          const qCount = qDocs.filter(q => String(getTestIdValue(q)).trim() === String(test.id).trim()).length;
+
+          card.innerHTML = `
+            <strong>${esc(test.title || 'Test')}</strong><br>
+            <span class="small">${esc(test.subject || '')}${test.chapter ? ' · ' + esc(test.chapter) : ''}</span><br>
+            <span class="small">${qCount} questions</span><br>
+            <span class="small">Unlimited retakes enabled</span>
+            <div class="btn-row">
+              <button class="primary-btn" type="button" onclick="window.__startTestX('${test.id}')">Start Test</button>
+            </div>
+            <div id="studentAttemptBox-${test.id}" class="attempts-box"></div>
+          `;
+          body.appendChild(card);
+        });
+      });
+
+      container.appendChild(subjectCard);
+    });
+
+    refreshVisibleAttemptBoxesStudent();
+  }
+
+function populateStudentChapterAttempts(chapterId){
+    const body = document.getElementById(chapterId);
+    if(!body) return;
+    let ids = [];
+    try{ ids = JSON.parse(body.dataset.testIds || '[]'); }catch(_){}
+    ids.forEach(renderStudentAttemptsForTest);
+  }
+  function refreshVisibleAttemptBoxesStudent(){
+    document.querySelectorAll('.chapter-body').forEach(elm=>{ if(elm.style.display !== 'none') populateStudentChapterAttempts(elm.id); });
+  }
+  function renderStudentAttemptsForTest(testId){
+    const box = document.getElementById(`studentAttemptBox-${testId}`);
+    if(!box) return;
+    const attempts = state.attempts.filter(a => String(a.testId || '')===String(testId) && String(a.userId || '')===String(getCurrentUser()?.uid || ''));
+    if(!attempts.length){
+      box.innerHTML = `<div class="small">No attempts yet. You can retry anytime.</div>`;
+      return;
+    }
+    const best = attempts.reduce((m,a)=>Math.max(m, Number(a.percentage || 0)), 0);
+    box.innerHTML = `
+      <div class="small"><strong>Attempts:</strong> ${attempts.length} • <strong>Best:</strong> ${best}%</div>
+      ${attempts.slice(0,3).map(a=>`
+        <div class="attempt-item">
+          <strong>${Number(a.percentage || 0)}%</strong> — ${a.score}/${a.total}<br>
+          <span class="small">${fmtDate(a.createdAt)}</span>
+        </div>
+      `).join('')}
+    `;
+  }
+
+  window.__toggleChapterStudentX = function(id){
+    const body = document.getElementById(id);
+    if(!body) return;
+    const isOpen = body.style.display !== 'none' && body.style.display !== '';
+    body.style.display = isOpen ? 'none' : 'block';
+    if(!isOpen) populateStudentChapterAttempts(id);
+  };
+
+  async function loadStudentLecturesAndCalendar(){
+    await loadAllData();
+    el.studentLectureList.innerHTML = state.lectures.length ? state.lectures.map(l=>`
+      <div class="mini-item">
+        <strong>${esc(l.title || 'Lecture')}</strong><br>
+        <span class="small">${esc(l.lectureDate || '')}</span><br>
+        ${l.fileUrl ? `<a href="${l.fileUrl}" target="_blank" rel="noopener" class="calendar-link">Open Lecture</a>` : ''}
+      </div>
+    `).join('') : `<div class="empty-box">No lectures uploaded yet.</div>`;
+
+    el.studentCalendarList.innerHTML = state.lectures.length ? state.lectures.map(l=>`
+      <div class="calendar-item">
+        <div class="calendar-date">${esc(l.lectureDate || 'No date')}</div>
+        <div class="calendar-title">${esc(l.title || 'Lecture')}</div>
+        ${l.fileUrl ? `<a href="${l.fileUrl}" target="_blank" rel="noopener" class="calendar-link">Open Lecture</a>` : ''}
+      </div>
+    `).join('') : `<div class="empty-box">No lecture calendar items yet.</div>`;
+  }
+
+  async function loadLeaderboardsAll(){
+    await loadAllData();
+    const ranking = {};
+    state.attempts.forEach(a=>{
+      const key = String(a.userId || a.userEmail || 'unknown');
+      if(!ranking[key]) ranking[key] = {name:a.userName || a.userEmail || 'Student', score:0, total:0, attempts:0};
+      ranking[key].score += Number(a.score || 0);
+      ranking[key].total += Number(a.total || 0);
+      ranking[key].attempts++;
+    });
+    const arr = Object.values(ranking).sort((a,b)=>(b.score-a.score)||(b.total-a.total));
+    const html = arr.length ? arr.map((r, i)=>`
+      <div class="leaderboard-row">
+        <div style="display:flex;gap:10px;align-items:center;">
+          <span class="rank-badge">${i+1}</span>
+          <div>
+            <strong>${esc(r.name)}</strong><br>
+            <span class="small">Attempts: ${r.attempts}</span>
+          </div>
+        </div>
+        <div style="font-weight:800;color:#0D1B40;">${r.total ? Math.round((r.score/r.total)*100) : 0}%</div>
+      </div>
+    `).join('') : `<div class="empty-box">No leaderboard data yet.</div>`;
+    el.studentLeaderboardList.innerHTML = html;
+    el.adminLeaderboardList.innerHTML = html;
+  }
+
+  async function refreshAll(){
+    await loadAllData();
+    if(state.currentUser && state.isAdmin){
+      renderAdminQuestionFields();
+      await refreshAdminOnly();
+      await loadAdminTests();
+      await loadAdminLectures();
+      await populateStudents();
+      await loadLeaderboardsAll();
+      return;
+    }
+
+    if(state.currentUser && !state.isAdmin){
+      await loadStudentHomeData();
+      await refreshStudentPractice();
+      await loadStudentLecturesAndCalendar();
+      await loadLeaderboardsAll();
+      return;
+    }
+  }
+
+  // Event wiring
+  el.portalFab.addEventListener('click', openPortal);
+  el.portalClose.addEventListener('click', closePortal);
+  el.portalOverlay.addEventListener('click', e=>{ if(e.target === el.portalOverlay) closePortal(); });
+  el.portalTabBtns.forEach(btn=> btn.addEventListener('click', ()=> switchPortalTab(btn.dataset.ptab)));
+
+  el.studentSignupBtn.addEventListener('click', async ()=>{
+    const name = val('signupNameX');
+    const email = val('signupEmailX');
+    const password = document.getElementById('signupPasswordX').value;
+    const phone = val('signupPhoneX');
+    if(!name || !email || !password){ setStatus(el.studentSignupStatus, 'Name, email and password are required.', true); return; }
+    try{
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      await cred.user.updateProfile({displayName:name});
+      await db.collection('users').doc(cred.user.uid).set({
+        name, email, phone, role:'student',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, {merge:true});
+      setStatus(el.studentSignupStatus, 'Account created successfully.');
+      closePortal();
+      openStudentApp();
+      setStudentHomeGreeting(name);
+      state.currentUser = cred.user;
+      state.isAdmin = false;
+      void refreshAll();
+    }catch(err){ setStatus(el.studentSignupStatus, err.message, true); }
+  });
+
+  el.studentLoginBtn.addEventListener('click', async ()=>{
+    const email = val('loginEmailX');
+    const password = document.getElementById('loginPasswordX').value;
+    if(!email || !password){ setStatus(el.studentLoginStatus, 'Email and password are required.', true); return; }
+    try{
+      const cred = await auth.signInWithEmailAndPassword(email, password);
+      state.currentUser = cred.user;
+      state.isAdmin = false;
+      setStatus(el.studentLoginStatus, 'Login successful.');
+      closePortal();
+      openStudentApp();
+      setStudentHomeGreeting(cred.user.displayName || cred.user.email || 'Student');
+      void refreshAll();
+    }catch(err){ setStatus(el.studentLoginStatus, err.message, true); }
+  });
+
+  el.adminLoginBtn.addEventListener('click', async ()=>{
+    const email = val('adminEmailX');
+    const password = document.getElementById('adminPasswordX').value;
+    if(!email || !password){ setStatus(el.adminLoginStatus, 'Email and password are required.', true); return; }
+    try{
+      const cred = await auth.signInWithEmailAndPassword(email, password);
+      if(cred.user.email !== ADMIN_EMAIL){
+        await auth.signOut();
+        setStatus(el.adminLoginStatus, 'This account is not configured as admin.', true);
+        return;
+      }
+      sessionStorage.setItem('adminUnlocked', '1');
+      state.currentUser = cred.user;
+      state.isAdmin = true;
+      setStatus(el.adminLoginStatus, 'Admin login successful.');
+      closePortal();
+      openAdminApp();
+      void refreshAll();
+    }catch(err){ setStatus(el.adminLoginStatus, err.message, true); }
+  });
+
+  el.studentLogoutBtn.addEventListener('click', async ()=>{ await auth.signOut(); state.currentUser = null; closeStudentApp(); });
+  el.adminLogoutBtn.addEventListener('click', async ()=>{ sessionStorage.removeItem('adminUnlocked'); await auth.signOut(); state.currentUser = null; state.isAdmin = false; closeAdminApp(); });
+  el.adminCloseBtn.addEventListener('click', closeAdminApp);
+  el.studentCloseBtn.addEventListener('click', closeStudentApp);
+  el.adminApp.addEventListener('click', e=>{ if(e.target === el.adminApp) closeAdminApp(); });
+  el.studentApp.addEventListener('click', e=>{ if(e.target === el.studentApp) closeStudentApp(); });
+  el.testOverlay.addEventListener('click', e=>{ if(e.target === el.testOverlay) closeTestOverlay(); });
+  el.closeTestOverlayBtn.addEventListener('click', closeTestOverlay);
+  el.adminThemeBtn.addEventListener('click', ()=> document.documentElement.classList.toggle('admin-light'));
+  el.adminCreateTestBtn.addEventListener('click', createOrLoadTest);
+  el.adminClearTestBtn.addEventListener('click', ()=>{
+    el.adminTestTitle.value = ''; el.adminTestSubject.value=''; el.adminTestChapter.value=''; el.adminSelectedTest.value='';
+    setStatus(el.adminTestStatus, '');
+  });
+  el.adminUploadQuestionBtn.addEventListener('click', uploadAdminQuestion);
+  el.adminUploadLectureBtn.addEventListener('click', uploadAdminLecture);
+  el.adminQuestionType.addEventListener('change', renderAdminQuestionFields);
+  el.adminLectureFilter.addEventListener('change', loadAdminLectures);
+  el.adminStudentSelect.addEventListener('change', ()=>renderAdminStudent(el.adminStudentSelect.value));
+  el.jumpCreateTest.addEventListener('click', ()=>window.__openAdminViewX('adminTestsX'));
+  el.jumpUploadLecture.addEventListener('click', ()=>window.__openAdminViewX('adminLecturesX'));
+  el.adminMenuBtns.forEach(btn=> btn.addEventListener('click', ()=> window.__openAdminViewX(btn.dataset.adminView)));
+  el.studentMenuBtns.forEach(btn=> btn.addEventListener('click', ()=> window.__openStudentViewX(btn.dataset.stuView)));
+
+  window.__openAdminViewX = function(viewId){
+    setMenuActive(el.adminMenuBtns, 'adminView', viewId);
+    showView(el.adminViews, viewId);
+  };
+  window.__openStudentViewX = function(viewId){
+    setMenuActive(el.studentMenuBtns, 'stuView', viewId);
+    showView(el.studentViews, viewId);
+    if(viewId === 'studentPracticeX') refreshStudentPractice();
+    if(viewId === 'studentLecturesX' || viewId === 'studentCalendarX') loadStudentLecturesAndCalendar();
+    if(viewId === 'studentLeaderboardX') loadLeaderboardsAll();
+    if(viewId === 'studentAttemptsX') loadStudentHomeData();
+  };
+
+  function hideAllApps() {
+    document.querySelectorAll('.admin-app, .student-app, .portal-overlay, .test-overlay')
+      .forEach(elm => elm.classList.remove('show'));
+  }
+
+  async function authStateHandler(user){
+    state.currentUser = user || null;
+
+    if (!user) return;
+
+    const isAdminEmail = user.email === ADMIN_EMAIL;
+    const isUnlocked = sessionStorage.getItem('adminUnlocked') === '1';
+
+    if (isAdminEmail) {
+      el.portalFab.style.display = 'none';
+      if (!isUnlocked) {
+        await auth.signOut();
+        return;
+      }
+
+      closePortal();
+      hideAllApps();
+      openAdminApp();
+      setMenuActive(el.adminMenuBtns, 'adminView', 'adminDashX');
+      showView(el.adminViews, 'adminDashX');
+      await refreshAll();
+      return;
+    }
+    auth.onAuthStateChanged((user) => {
+  authStateHandler(user);
+});
+
+    closePortal();
+    hideAllApps();
+    openStudentApp();
+    el.portalFab.style.display = 'none';
+    setMenuActive(el.studentMenuBtns, 'stuView', 'studentHomeX');
+    showView(el.studentViews, 'studentHomeX');
+    setStudentHomeGreeting(user.displayName || user.email || 'Student');
+    await refreshAll();
+  }
+
+
+
+  // Admin dashboard actions that depend on state
+  async function refreshAdminOnly(){
+    await loadAllData();
+    const qSnap = await db.collection('questions').get();
+    el.adminCountTests.textContent = state.tests.length;
+    el.adminCountQuestions.textContent = qSnap.size;
+    el.adminCountLectures.textContent = state.lectures.length;
+    const recent = state.attempts.slice(0,6).map(a => `
+      <div class="mini-item">
+        <strong>${esc(a.testTitle || 'Test')}</strong><br>
+        <span class="small">${esc(a.userName || a.userEmail || 'Student')} · ${a.percentage || 0}%</span>
+      </div>
+    `).join('');
+    el.adminActivity.innerHTML = recent || `<div class="empty-box">No recent activity.</div>`;
+  }
+
+  // override refreshAll to include admin/student-specific rendering
+  async function refreshAll(){
+    await loadAllData();
+    if(state.currentUser && state.isAdmin){
+      renderAdminQuestionFields();
+      await refreshAdminOnly();
+      await loadAdminTests();
+      await loadAdminLectures();
+      await populateStudents();
+      await loadLeaderboardsAll();
+      return;
+    }
+
+    if(state.currentUser && !state.isAdmin){
+      await loadStudentHomeData();
+      await refreshStudentPractice();
+      await loadStudentLecturesAndCalendar();
+      await loadLeaderboardsAll();
+      return;
+    }
+  }
+
+  // Fix buttons after render
+  attachTestButtons();
+
+  // Initial setup
+  renderAdminQuestionFields();
+  showView(el.adminViews, 'adminDashX');
+  showView(el.studentViews, 'studentHomeX');
+  closeAllApps();
+  document.body.style.overflow = '';
+})();
+function startTimerUI(){
+
+  clearInterval(window.testTimerInterval);
+
+  window.testTimerInterval = setInterval(()=>{
+    const timerEl = document.getElementById("testTimer");
+
+    if(!timerEl) return; // 👈 prevent crash
+
+    const diff = Math.floor((Date.now() - state.startTime)/1000);
+    const m = Math.floor(diff/60);
+    const s = diff%60;
+
+    timerEl.textContent = `⏱ ${m}:${s.toString().padStart(2,'0')}`;
+  },1000);
+
+}
 </script>
 
 </body>
