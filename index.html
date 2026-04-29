@@ -1452,8 +1452,8 @@ document.querySelectorAll('.fade-in').forEach(function(el) { observer.observe(el
       <div class="app-menu">
         <button class="active" data-stu-view="studentHomeX" type="button">Home</button>
         <button data-stu-view="studentPracticeX" type="button">Practice</button>
-        <button data-stu-view="studentLecturesX" type="button">Lectures</button>
-        <button data-stu-view="studentCalendarX" type="button">Calendar</button>
+        <button data-stu-view="studentLecturesX" type="button">Recorded Lectures</button>
+        <button data-stu-view="studentCalendarX" type="button">Live Lectures</button>
         <button data-stu-view="studentLeaderboardX" type="button">Leaderboard</button>
         <button data-stu-view="studentAttemptsX" type="button">Attempts</button>
         <button id="studentLogoutBtnX" type="button">Logout</button>
@@ -3102,95 +3102,32 @@ function populateStudentChapterAttempts(chapterId){
  async function loadStudentLecturesAndCalendar() {
   await loadAllData();
 
-  el.studentLectureList.innerHTML = state.lectures.length
-    ? state.lectures.map(l => `
+  el.studentLectureList.innerHTML = state.lectures.filter(l => !l.meetingLink).length
+    ? state.lectures.filter(l => !l.meetingLink).map(l => `
       <div class="mini-item">
         <strong>${esc(l.title || 'Lecture')}</strong><br>
         <span class="small">${esc(l.lectureDate || '')}</span><br>
-
         ${l.videoId
-          ? `<button class="secondary-btn" type="button"
-              onclick='openVideo(${JSON.stringify(String(l.videoId))})'>
-              ▶ Watch Lecture
-            </button>`
-
-          : l.meetingLink
-          ? `<a href="${l.meetingLink}" target="_blank"
-              class="secondary-btn">
-              🔴 Join Live Class
-            </a>`
-
+          ? `<button class="secondary-btn" type="button" onclick='openVideo(${JSON.stringify(String(l.videoId))})'>▶ Watch Lecture</button>`
           : l.videoURL
-          ? `<a href="${l.videoURL}" target="_blank"
-              class="secondary-btn">
-              📁 Open Lecture
-            </a>`
-
+          ? `<a href="${l.videoURL}" target="_blank" rel="noopener" class="calendar-link">📁 Open Lecture</a>`
           : ''
         }
       </div>
     `).join('')
-    : `<div class="empty-box">No lectures uploaded yet.</div>`;
+    : `<div class="empty-box">No recorded lectures yet.</div>`;
 
-
-
-  el.studentCalendarList.innerHTML = state.lectures.length
-    ? state.lectures.map(l => `
+  el.studentCalendarList.innerHTML = state.lectures.filter(l => l.meetingLink).length
+    ? state.lectures.filter(l => l.meetingLink).map(l => `
       <div class="calendar-item">
         <div class="calendar-date">${esc(l.lectureDate || 'No date')}</div>
-        <div class="calendar-title">${esc(l.title || 'Lecture')}</div>
-
-        ${l.videoId
-          ? `<button class="secondary-btn" type="button"
-              onclick='openVideo(${JSON.stringify(String(l.videoId))})'>
-              ▶ Watch
-            </button>`
-
-          : l.meetingLink
-          ? `<a href="${l.meetingLink}" target="_blank"
-              class="secondary-btn">
-              🔴 Join
-            </a>`
-
-          : l.videoURL
-          ? `<a href="${l.videoURL}" target="_blank"
-              class="secondary-btn">
-              📁 File
-            </a>`
-
-          : ''
-        }
+        <div class="calendar-title">🔴 LIVE: ${esc(l.title || 'Live Class')}</div>
+        <div class="calendar-time">🕒 ${esc(l.lectureTime || 'No time')}</div>
+        <button class="secondary-btn" type="button" onclick="openLive('${l.meetingLink}')">Join Live Class</button>
       </div>
     `).join('')
-    : `<div class="empty-box">No lecture calendar items yet.</div>`;
+    : `<div class="empty-box">No live classes scheduled.</div>`;
 }
-
-  async function loadLeaderboardsAll(){
-    await loadAllData();
-    const ranking = {};
-    state.attempts.forEach(a=>{
-      const key = String(a.userId || a.userEmail || 'unknown');
-      if(!ranking[key]) ranking[key] = {name:a.userName || a.userEmail || 'Student', score:0, total:0, attempts:0};
-      ranking[key].score += Number(a.score || 0);
-      ranking[key].total += Number(a.total || 0);
-      ranking[key].attempts++;
-    });
-    const arr = Object.values(ranking).sort((a,b)=>(b.score-a.score)||(b.total-a.total));
-    const html = arr.length ? arr.map((r, i)=>`
-      <div class="leaderboard-row">
-        <div style="display:flex;gap:10px;align-items:center;">
-          <span class="rank-badge">${i+1}</span>
-          <div>
-            <strong>${esc(r.name)}</strong><br>
-            <span class="small">Attempts: ${r.attempts}</span>
-          </div>
-        </div>
-        <div style="font-weight:800;color:#0D1B40;">${r.total ? Math.round((r.score/r.total)*100) : 0}%</div>
-      </div>
-    `).join('') : `<div class="empty-box">No leaderboard data yet.</div>`;
-    el.studentLeaderboardList.innerHTML = html;
-    el.adminLeaderboardList.innerHTML = html;
-  }
 
   async function refreshAll(){
     await loadAllData();
@@ -3437,17 +3374,16 @@ function populateStudentChapterAttempts(chapterId){
   document.body.style.overflow = '';
   window.uploadLiveClass = uploadAdminLecture;
 })();
-function openVideo(id){
-  document.getElementById("videoFrame").src =
-    `https://www.youtube.com/embed/${id}?autoplay=1`;
-
-  document.getElementById("videoModal").style.display = "flex";
+function openLive(link){
+  document.getElementById("liveFrame").src = link;
+  document.getElementById("liveModal").style.display = "block";
 }
 
-function closeVideo(){
-  document.getElementById("videoFrame").src = "";
-  document.getElementById("videoModal").style.display = "none";
-}
+function closeLive(){
+  document.getElementById("liveFrame").src = "";
+  document.getElementById("liveModal").style.display = "none";
+};
+
 document.getElementById('liveBtn').addEventListener('click', function () {
     console.log("CLICK WORKING"); // debug
 
@@ -3487,6 +3423,26 @@ flex-direction:column;
     allowfullscreen>
   </iframe>
 
+</div>
+<div id="liveModal" style="
+  display:none;
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.9);
+  z-index:9999;
+">
+  <button onclick="closeLive()" style="
+    position:absolute;top:20px;right:20px;
+    padding:10px 15px;
+    background:white;
+    border:none;
+    cursor:pointer;
+  ">Close</button>
+
+  <iframe id="liveFrame"
+    style="width:100%;height:100%;border:none;">
+  </iframe>
 </div>
 
 
