@@ -1073,6 +1073,21 @@ function getTestIdValue(q) {
   );
 }
 
+function getYouTubeId(input) {
+  const raw = String(input || '').trim();
+  if (!raw) return '';
+  const short = raw.match(/youtu\.be\/([A-Za-z0-9_-]{6,})/i);
+  if (short) return short[1];
+  const watch = raw.match(/[?&]v=([A-Za-z0-9_-]{6,})/i);
+  if (watch) return watch[1];
+  const embed = raw.match(/youtube\.com\/embed\/([A-Za-z0-9_-]{6,})/i);
+  if (embed) return embed[1];
+  const shorts = raw.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]{6,})/i);
+  if (shorts) return shorts[1];
+  if (/^[A-Za-z0-9_-]{6,}$/.test(raw)) return raw;
+  return '';
+}
+
 /* Navbar */
 const navbar = document.getElementById('navbar');
 window.addEventListener('scroll', function() {
@@ -1344,7 +1359,18 @@ document.querySelectorAll('.fade-in').forEach(function(el) { observer.observe(el
             <h3 class="subject-title">Upload Lecture</h3>
             <div class="portal-field"><label>Lecture Date</label><input type="date" id="adminLectureDateX"></div>
             <div class="portal-field"><label>Lecture Title</label><input type="text" id="adminLectureTitleX" placeholder="Lecture title"></div>
-            <div class="portal-field"><label>Lecture File</label><input type="file" id="adminLectureFileX" accept=".pdf,.mp4,.mov,.avi,.mkv"></div>
+            <div class="portal-field">
+  <label>YouTube Link (Recommended)</label>
+  <input type="text" id="adminLectureYoutubeX" placeholder="Paste YouTube link here">
+</div>
+
+<div class="portal-field">
+  <label>OR Upload File (optional)</label>
+ <input type="file" id="adminLectureFileX" accept=".pdf,.mp4,.mov,.avi,.mkv">
+</div>
+
+
+
             <button class="primary-btn" id="adminUploadLectureBtnX" type="button">Upload Lecture</button>
             <div class="portal-status" id="adminLectureStatusX"></div>
           </div>
@@ -1355,6 +1381,36 @@ document.querySelectorAll('.fade-in').forEach(function(el) { observer.observe(el
           </div>
         </div>
       </section>
+      <div class="app-card">
+  <h3 class="subject-title">Live Classes</h3>
+
+  <div class="portal-field">
+    <label>Title</label>
+    <input id="adminLiveTitleX">
+  </div>
+
+  <div class="portal-field">
+    <label>Date</label>
+    <input type="date" id="adminLiveDateX">
+  </div>
+
+  <div class="portal-field">
+    <label>Time</label>
+    <input type="time" id="adminLiveTimeX">
+  </div>
+
+  <div class="portal-field">
+    <label>Meeting Link (FreeConferenceCall)</label>
+    <input id="adminZoomLinkX">
+  </div>
+
+ <button class="primary-btn" id="liveBtn"></button>
+  Add Live Class
+</button>
+
+  <div id="adminLiveStatusX"></div>
+  <div id="adminLiveListX"></div>
+</div>
 
       <section class="app-view hidden" id="adminStudentsX">
         <div class="app-grid-2">
@@ -1585,6 +1641,7 @@ document.querySelectorAll('.fade-in').forEach(function(el) { observer.observe(el
     adminQuestionStatus: document.getElementById('adminQuestionStatusX'),
     adminLectureDate: document.getElementById('adminLectureDateX'),
     adminLectureTitle: document.getElementById('adminLectureTitleX'),
+    adminLectureYoutube: document.getElementById('adminLectureYoutubeX'),
     adminLectureFile: document.getElementById('adminLectureFileX'),
     adminUploadLectureBtn: document.getElementById('adminUploadLectureBtnX'),
     adminLectureStatus: document.getElementById('adminLectureStatusX'),
@@ -2012,8 +2069,8 @@ const testsBase = (() => {
     el.adminLectureList.innerHTML = filtered.length ? filtered.map(l=>`
       <div class="mini-item">
         <strong>${esc(l.lectureDate || 'No date')} — ${esc(l.title || 'Lecture')}</strong><br>
-        <span class="small">${esc(l.fileName || '')}</span><br>
-        ${l.fileUrl ? `<a href="${l.fileUrl}" target="_blank" rel="noopener" class="calendar-link">Open Lecture</a>` : ''}
+        <span class="small">${esc(l.fileName || l.source || '')}</span><br>
+        ${l.videoId ? `<button class="secondary-btn" type="button" onclick='openVideo(${JSON.stringify(String(l.videoId))})'>▶ Watch Lecture</button>` : (l.fileUrl ? `<a href="${l.fileUrl}" target="_blank" rel="noopener" class="calendar-link">Open Lecture</a>` : '')}
         <div class="btn-row" style="margin-top:10px;">
           <button class="secondary-btn" type="button" onclick="window.__deleteLectureX('${l.id}')">Delete</button>
         </div>
@@ -2100,52 +2157,118 @@ const testsBase = (() => {
     }
   }
 
-  async function uploadAdminLecture(){
-    const date = val('adminLectureDateX');
-    const title = val('adminLectureTitleX');
-    const input = el.adminLectureFile;
-    if(!date || !title || !input.files || !input.files[0]){ setStatus(el.adminLectureStatus, 'Date, title, and file are required.', true); return; }
-    try{
-      const file = input.files[0];
-      const safe = Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-      const ref = storage.ref('lectures/' + safe);
-      await ref.put(file);
-      const fileUrl = await ref.getDownloadURL();
+ function getYouTubeId(url) {
+  if (!url) return '';
+  if (url.includes("youtu.be/")) {
+    return url.split("youtu.be/")[1].split("?")[0];
+  }
+  if (url.includes("v=")) {
+    return url.split("v=")[1].split("&")[0];
+  }
+  return url;
+}
+
+window.uploadAdminLecture = async function () {
+  console.log("FUNCTION STARTED");
+
+  const date = val('adminLectureDateX') || val('adminLiveDateX');
+  const time = val('adminLiveTimeX') || '';
+  const title = val('adminLectureTitleX') || val('adminLiveTitleX');
+
+  const youtubeInput = val('adminLectureYoutubeX');
+  const meetingLink = val('adminZoomLinkX'); // FreeConference / Zoom
+  const input = el.adminLectureFile;
+
+  try {
+
+    // 🔴 LIVE CLASS
+    if (meetingLink) {
+      await db.collection('lectures').add({
+        lectureDate: date,
+        lectureTime: time,
+        title,
+        meetingLink,
+        source: 'live',
+        videoId: null,
+        videoURL: null,
+        uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      console.log("LIVE SAVED ✅");
+    }
+
+    // 📺 YOUTUBE
+    else if (youtubeInput) {
+      const videoId = getYouTubeId(youtubeInput);
+
       await db.collection('lectures').add({
         lectureDate: date,
         title,
-        fileName: file.name,
-        fileUrl,
+        videoId,
+        videoURL: `https://www.youtube.com/watch?v=${videoId}`,
+        source: 'youtube',
         uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
-      setStatus(el.adminLectureStatus, 'Lecture uploaded successfully ✅');
-      el.adminLectureDate.value = '';
-      el.adminLectureTitle.value = '';
-      el.adminLectureFile.value = '';
-      await loadAdminLectures();
-      await loadStudentLectures();
-      await refreshAdminDashboard();
-    }catch(err){ setStatus(el.adminLectureStatus, err.message, true); }
-  }
 
-  async function loadStudentLectures(){
-    await loadAllData();
-    el.studentLectureList.innerHTML = state.lectures.length ? state.lectures.map(l=>`
-      <div class="mini-item">
-        <strong>${esc(l.title || 'Lecture')}</strong><br>
-        <span class="small">${esc(l.lectureDate || '')}</span><br>
-        ${l.fileUrl ? `<a href="${l.fileUrl}" target="_blank" rel="noopener" class="calendar-link">Open Lecture</a>` : ''}
-      </div>
-    `).join('') : `<div class="empty-box">No lectures uploaded yet.</div>`;
+      console.log("YOUTUBE SAVED ✅");
+    }
 
-    el.studentCalendarList.innerHTML = state.lectures.length ? state.lectures.map(l=>`
-      <div class="calendar-item">
-        <div class="calendar-date">${esc(l.lectureDate || 'No date')}</div>
-        <div class="calendar-title">${esc(l.title || 'Lecture')}</div>
-        ${l.fileUrl ? `<a href="${l.fileUrl}" target="_blank" rel="noopener" class="calendar-link">Open Lecture</a>` : ''}
-      </div>
-    `).join('') : `<div class="empty-box">No lecture calendar items yet.</div>`;
+    // 📁 FILE
+    else if (input && input.files && input.files[0]) {
+      const file = input.files[0];
+      const safeName = Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+
+      const ref = storage.ref('lectures/' + safeName);
+      await ref.put(file);
+      const fileURL = await ref.getDownloadURL();
+
+      await db.collection('lectures').add({
+        lectureDate: date,
+        title,
+        meetingLink: null,
+        source: 'file',
+        videoId: null,
+        videoURL: fileURL,
+        fileName: file.name,
+        uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      console.log("FILE SAVED ✅");
+    }
+
+    else {
+      console.log("❌ NOTHING PROVIDED");
+      setStatus(el.adminLectureStatus, 'Provide link or file', true);
+      return;
+    }
+
+    // ✅ SUCCESS UI RESET
+    setStatus(el.adminLectureStatus, 'Uploaded successfully ✅');
+
+    if (el.adminLectureDate) el.adminLectureDate.value = '';
+    if (el.adminLectureTitle) el.adminLectureTitle.value = '';
+    if (el.adminLectureYoutube) el.adminLectureYoutube.value = '';
+    if (el.adminLectureFile) el.adminLectureFile.value = '';
+    if (el.adminZoomLink) el.adminZoomLink.value = '';
+    if (el.adminLiveDate) el.adminLiveDate.value = '';
+    if (el.adminLiveTime) el.adminLiveTime.value = '';
+    if (el.adminLiveTitle) el.adminLiveTitle.value = '';
+
+    // 🔄 REFRESH DATA
+    await loadAdminLectures();
+    await loadStudentLectures();
+
+    if (typeof loadStudentCalendar === 'function') {
+      await loadStudentCalendar();
+    }
+
+    await refreshAdminDashboard();
+
+  } catch (e) {
+    console.error("❌ ERROR:", e);
+    setStatus(el.adminLectureStatus, e.message || 'Upload failed', true);
   }
+};
 
   async function refreshStudentHome(){
     await loadAllData();
@@ -2378,7 +2501,6 @@ const testsBase = (() => {
       state.currentIndex = 0;
       // ⏱ Start Timer
 state.startTime = Date.now();
-startTimerUI();
 startTimerUI();
       state.currentScore = 0;
       state.currentResponses = [];
@@ -2977,24 +3099,71 @@ function populateStudentChapterAttempts(chapterId){
     if(!isOpen) populateStudentChapterAttempts(id);
   };
 
-  async function loadStudentLecturesAndCalendar(){
-    await loadAllData();
-    el.studentLectureList.innerHTML = state.lectures.length ? state.lectures.map(l=>`
+ async function loadStudentLecturesAndCalendar() {
+  await loadAllData();
+
+  el.studentLectureList.innerHTML = state.lectures.length
+    ? state.lectures.map(l => `
       <div class="mini-item">
         <strong>${esc(l.title || 'Lecture')}</strong><br>
         <span class="small">${esc(l.lectureDate || '')}</span><br>
-        ${l.fileUrl ? `<a href="${l.fileUrl}" target="_blank" rel="noopener" class="calendar-link">Open Lecture</a>` : ''}
-      </div>
-    `).join('') : `<div class="empty-box">No lectures uploaded yet.</div>`;
 
-    el.studentCalendarList.innerHTML = state.lectures.length ? state.lectures.map(l=>`
+        ${l.videoId
+          ? `<button class="secondary-btn" type="button"
+              onclick='openVideo(${JSON.stringify(String(l.videoId))})'>
+              ▶ Watch Lecture
+            </button>`
+
+          : l.meetingLink
+          ? `<a href="${l.meetingLink}" target="_blank"
+              class="secondary-btn">
+              🔴 Join Live Class
+            </a>`
+
+          : l.videoURL
+          ? `<a href="${l.videoURL}" target="_blank"
+              class="secondary-btn">
+              📁 Open Lecture
+            </a>`
+
+          : ''
+        }
+      </div>
+    `).join('')
+    : `<div class="empty-box">No lectures uploaded yet.</div>`;
+
+
+
+  el.studentCalendarList.innerHTML = state.lectures.length
+    ? state.lectures.map(l => `
       <div class="calendar-item">
         <div class="calendar-date">${esc(l.lectureDate || 'No date')}</div>
         <div class="calendar-title">${esc(l.title || 'Lecture')}</div>
-        ${l.fileUrl ? `<a href="${l.fileUrl}" target="_blank" rel="noopener" class="calendar-link">Open Lecture</a>` : ''}
+
+        ${l.videoId
+          ? `<button class="secondary-btn" type="button"
+              onclick='openVideo(${JSON.stringify(String(l.videoId))})'>
+              ▶ Watch
+            </button>`
+
+          : l.meetingLink
+          ? `<a href="${l.meetingLink}" target="_blank"
+              class="secondary-btn">
+              🔴 Join
+            </a>`
+
+          : l.videoURL
+          ? `<a href="${l.videoURL}" target="_blank"
+              class="secondary-btn">
+              📁 File
+            </a>`
+
+          : ''
+        }
       </div>
-    `).join('') : `<div class="empty-box">No lecture calendar items yet.</div>`;
-  }
+    `).join('')
+    : `<div class="empty-box">No lecture calendar items yet.</div>`;
+}
 
   async function loadLeaderboardsAll(){
     await loadAllData();
@@ -3229,6 +3398,34 @@ function populateStudentChapterAttempts(chapterId){
     }
   }
 
+  function startTimerUI(){
+    clearInterval(window.testTimerInterval);
+    window.testTimerInterval = setInterval(() => {
+      const timerEl = document.getElementById('testTimer');
+      if(!timerEl) return;
+      const diff = Math.floor((Date.now() - state.startTime) / 1000);
+      const m = Math.floor(diff / 60);
+      const s = diff % 60;
+      timerEl.textContent = `⏱ ${m}:${s.toString().padStart(2, '0')}`;
+    }, 1000);
+  }
+
+  window.openVideo = function(videoId){
+    const modal = document.getElementById('videoModal');
+    const frame = document.getElementById('videoFrame');
+    if(!modal || !frame) return;
+    frame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0`;
+    modal.style.display = 'flex';
+  };
+
+  window.closeVideo = function(){
+    const modal = document.getElementById('videoModal');
+    const frame = document.getElementById('videoFrame');
+    if(!modal || !frame) return;
+    frame.src = '';
+    modal.style.display = 'none';
+  };
+
   // Fix buttons after render
   attachTestButtons();
 
@@ -3238,25 +3435,60 @@ function populateStudentChapterAttempts(chapterId){
   showView(el.studentViews, 'studentHomeX');
   closeAllApps();
   document.body.style.overflow = '';
+  window.uploadLiveClass = uploadAdminLecture;
 })();
-function startTimerUI(){
+function openVideo(id){
+  document.getElementById("videoFrame").src =
+    `https://www.youtube.com/embed/${id}?autoplay=1`;
 
-  clearInterval(window.testTimerInterval);
-
-  window.testTimerInterval = setInterval(()=>{
-    const timerEl = document.getElementById("testTimer");
-
-    if(!timerEl) return; // 👈 prevent crash
-
-    const diff = Math.floor((Date.now() - state.startTime)/1000);
-    const m = Math.floor(diff/60);
-    const s = diff%60;
-
-    timerEl.textContent = `⏱ ${m}:${s.toString().padStart(2,'0')}`;
-  },1000);
-
+  document.getElementById("videoModal").style.display = "flex";
 }
+
+function closeVideo(){
+  document.getElementById("videoFrame").src = "";
+  document.getElementById("videoModal").style.display = "none";
+}
+document.getElementById('liveBtn').addEventListener('click', function () {
+    console.log("CLICK WORKING"); // debug
+
+    uploadAdminLecture(); // call your working function
+});
+
 </script>
+
+<div id="videoModal" style="
+position:fixed;
+top:0;left:0;width:100%;height:100%;
+background:rgba(0,0,0,0.9);
+display:none;
+z-index:20000;
+align-items:center;
+justify-content:center;
+flex-direction:column;
+">
+
+  <button onclick="closeVideo()" style="
+    position:absolute;
+    top:20px;
+    right:20px;
+    background:red;
+    color:white;
+    border:none;
+    padding:10px 14px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:bold;
+  ">✕ Close</button>
+
+  <iframe id="videoFrame"
+    width="80%"
+    height="80%"
+    style="border-radius:12px;border:none;"
+    allowfullscreen>
+  </iframe>
+
+</div>
+
 
 </body>
 </html>
