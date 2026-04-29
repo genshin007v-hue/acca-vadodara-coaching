@@ -3102,31 +3102,38 @@ function populateStudentChapterAttempts(chapterId){
  async function loadStudentLecturesAndCalendar() {
   await loadAllData();
 
-  el.studentLectureList.innerHTML = state.lectures.filter(l => !l.meetingLink).length
-    ? state.lectures.filter(l => !l.meetingLink).map(l => `
+  el.studentLectureList.innerHTML = state.lectures
+    .filter(l => !l.meetingLink)
+    .map(l => `
       <div class="mini-item">
         <strong>${esc(l.title || 'Lecture')}</strong><br>
         <span class="small">${esc(l.lectureDate || '')}</span><br>
-        ${l.videoId
-          ? `<button class="secondary-btn" type="button" onclick='openVideo(${JSON.stringify(String(l.videoId))})'>▶ Watch Lecture</button>`
-          : l.videoURL
-          ? `<a href="${l.videoURL}" target="_blank" rel="noopener" class="calendar-link">📁 Open Lecture</a>`
+
+        ${l.videoId 
+          ? `<button onclick='openVideo("${l.videoId}")'>▶ Watch</button>` 
+          : ''
+        }
+
+        ${l.videoURL 
+          ? `<a href="${l.videoURL}" target="_blank">Open Lecture</a>` 
           : ''
         }
       </div>
-    `).join('')
-    : `<div class="empty-box">No recorded lectures yet.</div>`;
+    `).join('');
 
-  el.studentCalendarList.innerHTML = state.lectures.filter(l => l.meetingLink).length
-    ? state.lectures.filter(l => l.meetingLink).map(l => `
+  el.studentCalendarList.innerHTML = state.lectures
+    .filter(l => l.meetingLink)
+    .map(l => `
       <div class="calendar-item">
-        <div class="calendar-date">${esc(l.lectureDate || 'No date')}</div>
-        <div class="calendar-title">🔴 LIVE: ${esc(l.title || 'Live Class')}</div>
-        <div class="calendar-time">🕒 ${esc(l.lectureTime || 'No time')}</div>
-        <button class="secondary-btn" type="button" onclick="openLive('${l.meetingLink}')">Join Live Class</button>
+        <div>${esc(l.lectureDate)}</div>
+        <div>🔴 LIVE: ${esc(l.title)}</div>
+        <div>🕒 ${esc(l.lectureTime || '')}</div>
+
+        <a href="${l.meetingLink}" target="_blank" class="secondary-btn">
+          Join Live Class
+        </a>
       </div>
-    `).join('')
-    : `<div class="empty-box">No live classes scheduled.</div>`;
+    `).join('');
 }
 
   async function refreshAll(){
@@ -3440,10 +3447,7 @@ flex-direction:column;
     cursor:pointer;
   ">Close</button>
 
-  <iframe id="liveFrame"
-    style="width:100%;height:100%;border:none;">
-  </iframe>
-</div>
+ 
 
 
 </body>
