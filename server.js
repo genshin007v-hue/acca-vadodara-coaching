@@ -6,22 +6,18 @@ const fs = require("fs");
 
 const app = express();
 
-// ✅ Middleware
 app.use(cors());
 app.use(express.json());
 
-// ✅ Multer config (temporary file storage)
+// Multer config
 const upload = multer({ dest: "uploads/" });
 
-// ✅ Cloudinary config (PUT YOUR REAL KEYS HERE)
-
-
+// Cloudinary config (from Render ENV)
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
 
 // ✅ Upload Route
 app.post("/upload", upload.single("file"), async (req, res) => {
@@ -30,31 +26,23 @@ app.post("/upload", upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    // Upload file to Cloudinary
     const result = await cloudinary.uploader.upload(req.file.path, {
       resource_type: "auto",
     });
 
-    // Delete temp file
+    // delete temp file
     fs.unlinkSync(req.file.path);
 
     return res.json({
       url: result.secure_url,
     });
+
   } catch (err) {
     console.error("UPLOAD ERROR:", err);
     return res.status(500).json({ error: "Upload failed" });
   }
 });
 
-// ✅ Test route (optional but useful)
-app.get("/", (req, res) => {
-  res.send("Server is running 🚀");
-});
-
-// ✅ PORT (Render uses this)
+// Server start
 const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
-});
+app.listen(PORT, () => console.log("Server running on port " + PORT));
