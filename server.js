@@ -1,33 +1,34 @@
 const express = require('express');
 const multer = require('multer');
-const cloudinary = require('cloudinary').v2;
 const cors = require('cors');
-const fs = require('fs');
+const path = require('path');
 
 const app = express();
+
+// ✅ STEP 3 — ADD CORS HERE
 app.use(cors());
 
-const upload = multer({ dest: 'uploads/' });
-
-cloudinary.config({
-  cloud_name: 'ddyyxqugs',
-  api_key: '215689441362215',
-  api_secret: '_TE-ovCbLeGWSKDN48y-XDpZYNM'
-});
-
-app.post('/upload', upload.single('file'), async (req, res) => {
-  try {
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      resource_type: 'raw'
-    });
-
-    fs.unlinkSync(req.file.path); // delete temp file
-
-    res.json({ url: result.secure_url });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Upload failed');
+// storage config
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
   }
 });
 
-app.listen(3000, () => console.log('Server running on port 3000'));
+const upload = multer({ storage });
+
+// upload route
+app.post('/upload', upload.single('file'), (req, res) => {
+  const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+  res.json({ url: fileUrl });
+});
+
+// serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Server running on port " + PORT));
