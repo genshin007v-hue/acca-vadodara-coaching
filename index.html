@@ -1577,7 +1577,7 @@ document.querySelectorAll('.fade-in').forEach(function(el) { observer.observe(el
   if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
-  const storage = firebase.storage();
+  
   const ADMIN_EMAIL = "vinayakproedu@gmail.com";
 
   const el = {
@@ -3401,10 +3401,18 @@ function closeLive(){
   document.getElementById("liveModal").style.display = "none";
 };
 
-document.getElementById('liveBtn').addEventListener('click', function () {
-    console.log("CLICK WORKING"); // debug
+document.addEventListener("DOMContentLoaded", () => {
+  const liveBtn = document.getElementById("liveBtn");
 
-    uploadAdminLecture(); // call your working function
+  if (!liveBtn) {
+    console.error("❌ liveBtn NOT FOUND");
+    return;
+  }
+
+  liveBtn.addEventListener("click", function () {
+    console.log("CLICK WORKING");
+    uploadAdminLecture();
+  });
 });
 
 </script>
