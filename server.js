@@ -26,10 +26,12 @@ app.post("/upload", upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      resource_type: "auto",
-    });
-
+ const result = await cloudinary.uploader.upload(req.file.path, {
+  resource_type: "auto",
+  type: "upload",        // 👈 VERY IMPORTANT
+  access_mode: "public", // 👈 VERY IMPORTANT
+});
+  
     // delete temp file
     fs.unlinkSync(req.file.path);
 
