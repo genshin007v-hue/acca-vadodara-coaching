@@ -2230,7 +2230,7 @@ window.uploadAdminLecture = async function () {
   }
 
   const data = await res.json();
-  const fileURL = data.url;
+const fileURL = data.url;
 
   await db.collection('lectures').add({
     lectureDate: date,
