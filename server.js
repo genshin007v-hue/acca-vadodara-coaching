@@ -1,33 +1,60 @@
+const express = require("express");
+const cors = require("cors");
+const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
+
+const app = express();
+
+// ✅ Middleware
+app.use(cors());
+app.use(express.json());
+
+// ✅ Multer config (temporary file storage)
+const upload = multer({ dest: "uploads/" });
+
+// ✅ Cloudinary config (PUT YOUR REAL KEYS HERE)
+
 
 cloudinary.config({
-  cloud_name: "YOUR_CLOUD_NAME",
-  api_key: "YOUR_API_KEY",
-  api_secret: "YOUR_API_SECRET",
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+
+// ✅ Upload Route
 app.post("/upload", upload.single("file"), async (req, res) => {
   try {
-    const file = req.file;
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
 
-    const result = await cloudinary.uploader.upload_stream(
-      { resource_type: "auto" },
-      (error, result) => {
-        if (error) {
-          return res.status(500).json({ error: "Upload failed" });
-        }
+    // Upload file to Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      resource_type: "auto",
+    });
 
-        return res.json({
-          url: result.secure_url
-        });
-      }
-    );
+    // Delete temp file
+    fs.unlinkSync(req.file.path);
 
-    const stream = result;
-    stream.end(file.buffer);
-
+    return res.json({
+      url: result.secure_url,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Upload failed" });
+    console.error("UPLOAD ERROR:", err);
+    return res.status(500).json({ error: "Upload failed" });
   }
+});
+
+// ✅ Test route (optional but useful)
+app.get("/", (req, res) => {
+  res.send("Server is running 🚀");
+});
+
+// ✅ PORT (Render uses this)
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Server running on port " + PORT);
 });
