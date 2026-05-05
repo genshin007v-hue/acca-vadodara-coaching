@@ -2203,22 +2203,22 @@ window.uploadAdminLecture = async function () {
       return;
     }
 
-    const lectures = JSON.parse(localStorage.getItem("lectures")) || [];
-
-    const newLecture = {
+   const newLecture = {
   title,
   lectureDate: date,
   lectureTime: time || "",
   videoURL: videoURL || null,
   meetingLink: meetingLink || null,
-  fileURL: window.uploadedFileURL || null, // 🔥 THIS MUST NOT BE NULL
+  fileURL: window.uploadedFileURL || null,
   uploadedAt: new Date().toISOString()
 };
-    lectures.push(newLecture);
-    localStorage.setItem("lectures", JSON.stringify(lectures));
 
-    console.log("✅ SAVED:", newLecture);
-    setStatus(el.adminLectureStatus, "Uploaded successfully ✅");
+// ✅ SAVE TO FIREBASE
+await db.collection("lectures").add(newLecture);
+
+
+const snapshot = await db.collection("lectures").get();
+state.lectures = snapshot.docs.map(doc => doc.data());
 
     window.uploadedFileURL = null;
 
@@ -3073,47 +3073,60 @@ function populateStudentChapterAttempts(chapterId){
   };
 
  async function loadStudentLecturesAndCalendar() {
-  state.lectures = JSON.parse(localStorage.getItem("lectures")) || [];
-  console.log("LOADED LECTURES:", state.lectures);
+  try {
+    // Load lectures from Firebase
+    const snapshot = await db.collection("lectures").get();
+    state.lectures = snapshot.docs.map(doc => doc.data());
 
-  if (el.studentLectureList) {
-    el.studentLectureList.innerHTML = state.lectures
-      .filter(l => l.videoURL || l.fileURL || l.meetingLink)
-      .map(l => `
-        <div class="mini-item">
-          <strong>${esc(l.title || "Lecture")}</strong><br>
-          <span class="small">${esc(l.lectureDate || "No date")}</span><br>
+    console.log("LOADED FROM FIREBASE:", state.lectures);
 
-          ${l.videoURL
-            ? `<a href="${l.videoURL}" target="_blank" class="primary-btn">🎥 Watch</a>`
-            : ""}
+    if (el.studentLectureList) {
+      el.studentLectureList.innerHTML = state.lectures
+        .filter(l => l.videoURL || l.fileURL || l.meetingLink)
+        .map(l => `
+          <div class="mini-item">
+            <strong>${esc(l.title || 'Lecture')}</strong><br>
+            <span class="small">${esc(l.lectureDate || 'No date')}</span><br>
 
-          ${l.fileURL
-            ? `<a href="${l.fileURL}" target="_blank" class="primary-btn">📄 Download</a>`
-            : ""}
+            ${l.videoURL
+              ? `<a href="${l.videoURL}" target="_blank" class="primary-btn">🎬 Watch</a>`
+              : ""}
 
-          ${l.meetingLink
-            ? `<button onclick="openLive('${l.meetingLink}')" class="primary-btn">🔴 Join Live</button>`
-            : ""}
-        </div>
-      `)
-      .join("");
-  }
+            ${l.fileURL
+              ? `<a href="${l.fileURL}" target="_blank" class="primary-btn">📄 Download</a>`
+              : ""}
 
-  if (el.studentCalendarList) {
-    el.studentCalendarList.innerHTML = state.lectures
-      .filter(l => l.meetingLink)
-      .map(l => `
-        <div class="calendar-item">
-          <div>${esc(l.lectureDate || "")}</div>
-          <div>🔴 LIVE: ${esc(l.title || "Lecture")}</div>
-          <div>🕒 ${esc(l.lectureTime || "")}</div>
-          <a href="${l.meetingLink}" target="_blank" class="secondary-btn">
-            Join Live Class
-          </a>
-        </div>
-      `)
-      .join("");
+            ${l.meetingLink
+              ? `<button onclick="openLive('${l.meetingLink}')" class="primary-btn">🔴 Join Live</button>`
+              : ""}
+          </div>
+        `)
+        .join('');
+    }
+
+    if (el.studentCalendarList) {
+      el.studentCalendarList.innerHTML = state.lectures
+        .filter(l => l.meetingLink)
+        .map(l => `
+          <div class="calendar-item">
+            <div>${esc(l.lectureDate || "")}</div>
+            <div>🔴 LIVE: ${esc(l.title || "Lecture")}</div>
+            <div>🕒 ${esc(l.lectureTime || "")}</div>
+            <a href="${l.meetingLink}" target="_blank" class="secondary-btn">
+              Join Live Class
+            </a>
+          </div>
+        `)
+        .join('');
+    }
+  } catch (e) {
+    console.error("loadStudentLecturesAndCalendar failed:", e);
+    if (el.studentLectureList) {
+      el.studentLectureList.innerHTML = `<div class="empty-box">Failed to load lectures.</div>`;
+    }
+    if (el.studentCalendarList) {
+      el.studentCalendarList.innerHTML = `<div class="empty-box">Failed to load calendar.</div>`;
+    }
   }
 }
 
