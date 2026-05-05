@@ -1366,7 +1366,12 @@ document.querySelectorAll('.fade-in').forEach(function(el) { observer.observe(el
 
 <div class="portal-field">
   <label>OR Upload File (optional)</label>
- <input type="file" id="adminLectureFileX" accept=".pdf,.mp4,.mov,.avi,.mkv">
+ <input
+  type="hidden"
+  role="uploadcare-uploader"
+  data-public-key="9dcf4ee1bc520691123a"
+  id="uploadcareInput"
+/>
 </div>
 
 
@@ -1513,7 +1518,7 @@ document.querySelectorAll('.fade-in').forEach(function(el) { observer.observe(el
       <section class="app-view hidden" id="studentLeaderboardX">
         <div class="app-card">
           <h3 class="subject-title">Leaderboard</h3>
-          <div id="studentLeaderboardListX"></div>
+          <div id="studentLeaderboardList"></div>
         </div>
       </section>
 
@@ -1564,6 +1569,7 @@ document.querySelectorAll('.fade-in').forEach(function(el) { observer.observe(el
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+<script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
 <script>
 (function(){
   const firebaseConfig = {
@@ -1575,9 +1581,9 @@ document.querySelectorAll('.fade-in').forEach(function(el) { observer.observe(el
     appId: "1:993646562333:web:5f37a0b63d4d177adf4af4"
   };
   if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-  
+ window.auth = firebase.auth();
+window.db = firebase.firestore();
+  const storage = firebase.storage();
   const ADMIN_EMAIL = "vinayakproedu@gmail.com";
 
   const el = {
@@ -2082,7 +2088,7 @@ const testsBase = (() => {
     if(!confirm('Delete this lecture?')) return;
     await db.collection('lectures').doc(id).delete();
     await loadAdminLectures();
-    await loadStudentLectures();
+    await await loadStudentLecturesAndCalendar();;
     await refreshAdminDashboard();
   };
 
@@ -2167,93 +2173,54 @@ const testsBase = (() => {
   }
   return url;
 }
-
 window.uploadAdminLecture = async function () {
   console.log("FUNCTION STARTED");
+    const input = el.adminLectureFile; // ✅ ADD THIS LINE
 
-  const date = val('adminLectureDateX') || val('adminLiveDateX');
-  const time = val('adminLiveTimeX') || '';
-  const title = val('adminLectureTitleX') || val('adminLiveTitleX');
-
-  const youtubeInput = val('adminLectureYoutubeX');
-  const meetingLink = val('adminZoomLinkX'); // FreeConference / Zoom
-  const input = el.adminLectureFile;
-
-  try {
-
-    // 🔴 LIVE CLASS
-    if (meetingLink) {
-      await db.collection('lectures').add({
-        lectureDate: date,
-        lectureTime: time,
-        title,
-        meetingLink,
-        source: 'live',
-        videoId: null,
-        videoURL: null,
-        uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-
-      console.log("LIVE SAVED ✅");
-    }
-
-    // 📺 YOUTUBE
-    else if (youtubeInput) {
-      const videoId = getYouTubeId(youtubeInput);
-
-      await db.collection('lectures').add({
-        lectureDate: date,
-        title,
-        videoId,
-        videoURL: `https://www.youtube.com/watch?v=${videoId}`,
-        source: 'youtube',
-        uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-
-      console.log("YOUTUBE SAVED ✅");
-    }
-
-    // 📁 FILE
-   else if (input && input.files && input.files[0]) {
-  const file = input.files[0];
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const res = await fetch("https://acca-vadodara-coaching.onrender.com/upload", {
-    method: "POST",
-    body: formData
-  });
-
-  if (!res.ok) {
-    throw new Error("Upload failed");
+  if (input && input.value && !window.uploadedFileURL) {
+    alert("Please wait for file upload to finish ⏳");
+    return;
   }
 
-  const data = await res.json();
-const fileURL = data.url;
+  try {
+    const date = val('adminLectureDateX') || val('adminLiveDateX') || '';
+    const time = val('adminLiveTimeX') || '';
+    const title = val('adminLectureTitleX') || val('adminLiveTitleX') || '';
+    const youtubeInput = val('adminLectureYoutubeX') || '';
+    const meetingLink = val('adminZoomLinkX') || '';
+    const fileURL = window.uploadedFileURL || null;
 
-  await db.collection('lectures').add({
-    lectureDate: date,
-    title,
-    meetingLink: null,
-    source: 'file',
-    videoId: null,
-    videoURL: fileURL,
-    fileName: file.name,
-    uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
+    let videoURL = null;
+    let videoId = null;
 
-  console.log("FILE SAVED ✅");
-}
+    if (youtubeInput) {
+      videoId = getYouTubeId(youtubeInput);
+      videoURL = videoId ? `https://www.youtube.com/watch?v=${videoId}` : youtubeInput;
+    }
 
-    else {
-      console.log("❌ NOTHING PROVIDED");
-      setStatus(el.adminLectureStatus, 'Provide link or file', true);
+    if (!meetingLink && !videoURL && !fileURL) {
+      setStatus(el.adminLectureStatus, "Provide link or file", true);
       return;
     }
 
-    // ✅ SUCCESS UI RESET
-    setStatus(el.adminLectureStatus, 'Uploaded successfully ✅');
+    const lectures = JSON.parse(localStorage.getItem("lectures")) || [];
+
+    const newLecture = {
+  title,
+  lectureDate: date,
+  lectureTime: time || "",
+  videoURL: videoURL || null,
+  meetingLink: meetingLink || null,
+  fileURL: window.uploadedFileURL || null, // 🔥 THIS MUST NOT BE NULL
+  uploadedAt: new Date().toISOString()
+};
+    lectures.push(newLecture);
+    localStorage.setItem("lectures", JSON.stringify(lectures));
+
+    console.log("✅ SAVED:", newLecture);
+    setStatus(el.adminLectureStatus, "Uploaded successfully ✅");
+
+    window.uploadedFileURL = null;
 
     if (el.adminLectureDate) el.adminLectureDate.value = '';
     if (el.adminLectureTitle) el.adminLectureTitle.value = '';
@@ -2264,21 +2231,17 @@ const fileURL = data.url;
     if (el.adminLiveTime) el.adminLiveTime.value = '';
     if (el.adminLiveTitle) el.adminLiveTitle.value = '';
 
-    // 🔄 REFRESH DATA
-    await loadAdminLectures();
-    await loadStudentLectures();
-
-    if (typeof loadStudentCalendar === 'function') {
-      await loadStudentCalendar();
+    if (typeof loadStudentLecturesAndCalendar === "function") {
+      await loadStudentLecturesAndCalendar();
     }
-
-    await refreshAdminDashboard();
 
   } catch (e) {
     console.error("❌ ERROR:", e);
-    setStatus(el.adminLectureStatus, e.message || 'Upload failed', true);
+    setStatus(el.adminLectureStatus, e.message || "Upload failed", true);
   }
 };
+
+
 
   async function refreshStudentHome(){
     await loadAllData();
@@ -2906,7 +2869,7 @@ try{
     await loadAllData(true);
     await loadStudentHomeData();
     await refreshStudentPractice();
-    await loadLeaderboardsAll();
+  // await loadLeaderboardsAll();   // temporarily disabled
   }
 
   function closeTestOverlay(){
@@ -3110,63 +3073,79 @@ function populateStudentChapterAttempts(chapterId){
   };
 
  async function loadStudentLecturesAndCalendar() {
-  await loadAllData();
+  state.lectures = JSON.parse(localStorage.getItem("lectures")) || [];
+  console.log("LOADED LECTURES:", state.lectures);
 
-  el.studentLectureList.innerHTML = state.lectures
-    .filter(l => !l.meetingLink)
-    .map(l => `
-      <div class="mini-item">
-        <strong>${esc(l.title || 'Lecture')}</strong><br>
-        <span class="small">${esc(l.lectureDate || '')}</span><br>
+  if (el.studentLectureList) {
+    el.studentLectureList.innerHTML = state.lectures
+      .filter(l => l.videoURL || l.fileURL || l.meetingLink)
+      .map(l => `
+        <div class="mini-item">
+          <strong>${esc(l.title || "Lecture")}</strong><br>
+          <span class="small">${esc(l.lectureDate || "No date")}</span><br>
 
-        ${l.videoId 
-          ? `<button onclick='openVideo("${l.videoId}")'>▶ Watch</button>` 
-          : ''
-        }
+          ${l.videoURL
+            ? `<a href="${l.videoURL}" target="_blank" class="primary-btn">🎥 Watch</a>`
+            : ""}
 
-        ${l.videoURL 
-          ? `<a href="${l.videoURL}" target="_blank">Open Lecture</a>` 
-          : ''
-        }
-      </div>
-    `).join('');
+          ${l.fileURL
+            ? `<a href="${l.fileURL}" target="_blank" class="primary-btn">📄 Download</a>`
+            : ""}
 
-  el.studentCalendarList.innerHTML = state.lectures
-    .filter(l => l.meetingLink)
-    .map(l => `
-      <div class="calendar-item">
-        <div>${esc(l.lectureDate)}</div>
-        <div>🔴 LIVE: ${esc(l.title)}</div>
-        <div>🕒 ${esc(l.lectureTime || '')}</div>
+          ${l.meetingLink
+            ? `<button onclick="openLive('${l.meetingLink}')" class="primary-btn">🔴 Join Live</button>`
+            : ""}
+        </div>
+      `)
+      .join("");
+  }
 
-        <a href="${l.meetingLink}" target="_blank" class="secondary-btn">
-          Join Live Class
-        </a>
-      </div>
-    `).join('');
+  if (el.studentCalendarList) {
+    el.studentCalendarList.innerHTML = state.lectures
+      .filter(l => l.meetingLink)
+      .map(l => `
+        <div class="calendar-item">
+          <div>${esc(l.lectureDate || "")}</div>
+          <div>🔴 LIVE: ${esc(l.title || "Lecture")}</div>
+          <div>🕒 ${esc(l.lectureTime || "")}</div>
+          <a href="${l.meetingLink}" target="_blank" class="secondary-btn">
+            Join Live Class
+          </a>
+        </div>
+      `)
+      .join("");
+  }
 }
 
-  async function refreshAll(){
-    await loadAllData();
-    if(state.currentUser && state.isAdmin){
+async function refreshAll() {
+  try {
+    if (state.currentUser && state.isAdmin) {
       renderAdminQuestionFields();
       await refreshAdminOnly();
       await loadAdminTests();
       await loadAdminLectures();
       await populateStudents();
-      await loadLeaderboardsAll();
+
+      if (typeof loadLeaderboardsAll === "function") {
+        await loadLeaderboardsAll();
+      }
       return;
     }
 
-    if(state.currentUser && !state.isAdmin){
+    if (state.currentUser && !state.isAdmin) {
       await loadStudentHomeData();
       await refreshStudentPractice();
       await loadStudentLecturesAndCalendar();
-      await loadLeaderboardsAll();
+
+      if (typeof loadLeaderboardsAll === "function") {
+        await loadLeaderboardsAll();
+      }
       return;
     }
+  } catch (e) {
+    console.error("refreshAll failed:", e);
   }
-
+}
   // Event wiring
   el.portalFab.addEventListener('click', openPortal);
   el.portalClose.addEventListener('click', closePortal);
@@ -3401,19 +3380,69 @@ function closeLive(){
   document.getElementById("liveModal").style.display = "none";
 };
 
-document.addEventListener("DOMContentLoaded", () => {
-  const liveBtn = document.getElementById("liveBtn");
+document.getElementById('liveBtn').addEventListener('click', function () {
+    console.log("CLICK WORKING"); // debug
 
-  if (!liveBtn) {
-    console.error("❌ liveBtn NOT FOUND");
+    uploadAdminLecture(); // call your working function
+});
+window.uploadedFileURL = null;
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const uploader = document.querySelector('[role=uploadcare-uploader]');
+  if (!uploader) return;
+
+  uploader.addEventListener("change", function (e) {
+    const file = e.detail;
+    file.done(function (fileInfo) {
+      window.uploadedFileURL = fileInfo.cdnUrl;
+      console.log("Uploaded:", window.uploadedFileURL);
+    });
+  });
+});
+UPLOADCARE_PUBLIC_KEY = "9dcf4ee1bc520691123a";
+
+window.uploadedFileURL = null;
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  const widget = uploadcare.Widget('[role=uploadcare-uploader]');
+
+  widget.onUploadComplete(function (info) {
+    console.log("✅ FILE UPLOADED:", info.cdnUrl);
+
+    window.uploadedFileURL = info.cdnUrl;
+  });
+
+});
+
+
+
+ async function loadLeaderboardsAll() {
+  const container = document.getElementById("studentLeaderboardList");
+
+  if (!container) return;
+
+  const snapshot = await db.collection("users")
+    .orderBy("score", "desc")
+    .limit(10)
+    .get();
+
+  if (snapshot.empty) {
+    container.innerHTML = "<p>No leaderboard data</p>";
     return;
   }
 
-  liveBtn.addEventListener("click", function () {
-    console.log("CLICK WORKING");
-    uploadAdminLecture();
-  });
-});
+  container.innerHTML = snapshot.docs.map((doc, i) => {
+    const u = doc.data();
+    return `
+      <div class="mini-item">
+        <strong>#${i + 1} ${u.name || "User"}</strong><br>
+        <span class="small">Score: ${u.score || 0}</span>
+      </div>
+    `;
+  }).join("");
+}
 
 </script>
 
@@ -3469,37 +3498,4 @@ flex-direction:column;
 
 
 </body>
-<script>
-const cloudName = "YOUR_CLOUD_NAME";
-const uploadPreset = "YOUR_UNSIGNED_PRESET";
-
-document.getElementById("fileUpload").addEventListener("change", async function () {
-  const file = this.files[0];
-  if (!file) return;
-
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", uploadPreset);
-
-  try {
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-      method: "POST",
-      body: formData
-    });
-
-    const data = await res.json();
-
-    console.log("Uploaded:", data.secure_url);
-
-    // Preview image
-    const preview = document.getElementById("preview");
-    preview.src = data.secure_url;
-    preview.style.display = "block";
-
-  } catch (err) {
-    console.error(err);
-    alert("Upload failed");
-  }
-});
-</script>
 </html>
