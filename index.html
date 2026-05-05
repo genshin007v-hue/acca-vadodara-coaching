@@ -1214,7 +1214,7 @@ document.querySelectorAll('.fade-in').forEach(function(el) { observer.observe(el
       <div class="portal-left">
         <div class="portal-tabs">
           <button class="portal-tab-btn active" data-ptab="studentLoginX" type="button">Student Login</button>
-          <button class="portal-tab-btn" data-ptab="studentSignupX" type="button">Student Signup</button>
+          
           <button class="portal-tab-btn" data-ptab="adminLoginX" type="button">Admin Access</button>
         </div>
 
@@ -1222,21 +1222,13 @@ document.querySelectorAll('.fade-in').forEach(function(el) { observer.observe(el
           <div class="portal-field"><label>Email</label><input type="email" id="loginEmailX" placeholder="student@email.com"></div>
           <div class="portal-field"><label>Password</label><input type="password" id="loginPasswordX" placeholder="••••••••"></div>
           <button class="secondary-btn" id="studentLoginBtnX" type="button">Login</button>
+          <a href="javascript:void(0);" onclick="forgotPassword()" style="display:block; margin-top:10px;">
+  Forgot Password?
+</a>
           <div class="portal-status" id="studentLoginStatusX"></div>
         </div>
 
-        <div class="portal-tab" id="studentSignupX">
-          <div class="portal-grid">
-            <div class="portal-field"><label>Full Name</label><input type="text" id="signupNameX" placeholder="Your name"></div>
-            <div class="portal-field"><label>Email</label><input type="email" id="signupEmailX" placeholder="student@email.com"></div>
-          </div>
-          <div class="portal-grid">
-            <div class="portal-field"><label>Password</label><input type="password" id="signupPasswordX" placeholder="Create password"></div>
-            <div class="portal-field"><label>WhatsApp Number</label><input type="tel" id="signupPhoneX" placeholder="+91..."></div>
-          </div>
-          <button class="secondary-btn" id="studentSignupBtnX" type="button">Create Account</button>
-          <div class="portal-status" id="studentSignupStatusX"></div>
-        </div>
+        
 
         <div class="portal-tab" id="adminLoginX">
           <div class="portal-field"><label>Admin Email</label><input type="email" id="adminEmailX" placeholder="admin@email.com"></div>
@@ -1608,7 +1600,8 @@ window.db = firebase.firestore();
     adminPassword: document.getElementById('adminPasswordX'),
     studentApp: document.getElementById('studentAppX'),
     adminApp: document.getElementById('adminAppX'),
-    studentHello: document.getElementById('studentHelloX'),
+    leaderboardList: document.getElementById("leaderboardList"),
+studentHello: document.getElementById('studentHelloX'),
     studentCloseBtn: document.getElementById('studentCloseBtnX'),
     adminCloseBtn: document.getElementById('adminCloseBtnX'),
     adminLogoutBtn: document.getElementById('adminLogoutBtnX'),
@@ -1687,6 +1680,27 @@ window.db = firebase.firestore();
     submitBtn: document.getElementById('submitBtnX'),
     nextBtn: document.getElementById('nextBtnX'),
   };
+  async function loadLeaderboardsAll() {
+  try {
+    const snapshot = await db.collection("leaderboard").get();
+    const leaderboard = snapshot.docs.map(doc => doc.data());
+
+    console.log("LEADERBOARD DATA:", leaderboard);
+
+    leaderboard.sort((a, b) => (b.score || 0) - (a.score || 0));
+
+    el.leaderboardList.innerHTML = leaderboard.map((user, i) => `
+      <div class="leaderboard-item">
+        <span>#${i + 1}</span>
+        <span>${user.name || "Student"}</span>
+        <span>${user.score || 0} pts</span>
+      </div>
+    `).join('');
+
+  } catch (e) {
+    console.error("Leaderboard error:", e);
+  }
+}
 
   const state = {
     startTime: null,
@@ -3165,29 +3179,7 @@ async function refreshAll() {
   el.portalOverlay.addEventListener('click', e=>{ if(e.target === el.portalOverlay) closePortal(); });
   el.portalTabBtns.forEach(btn=> btn.addEventListener('click', ()=> switchPortalTab(btn.dataset.ptab)));
 
-  el.studentSignupBtn.addEventListener('click', async ()=>{
-    const name = val('signupNameX');
-    const email = val('signupEmailX');
-    const password = document.getElementById('signupPasswordX').value;
-    const phone = val('signupPhoneX');
-    if(!name || !email || !password){ setStatus(el.studentSignupStatus, 'Name, email and password are required.', true); return; }
-    try{
-      const cred = await auth.createUserWithEmailAndPassword(email, password);
-      await cred.user.updateProfile({displayName:name});
-      await db.collection('users').doc(cred.user.uid).set({
-        name, email, phone, role:'student',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, {merge:true});
-      setStatus(el.studentSignupStatus, 'Account created successfully.');
-      closePortal();
-      openStudentApp();
-      setStudentHomeGreeting(name);
-      state.currentUser = cred.user;
-      state.isAdmin = false;
-      void refreshAll();
-    }catch(err){ setStatus(el.studentSignupStatus, err.message, true); }
-  });
-
+  
   el.studentLoginBtn.addEventListener('click', async ()=>{
     const email = val('loginEmailX');
     const password = document.getElementById('loginPasswordX').value;
@@ -3203,6 +3195,24 @@ async function refreshAll() {
       void refreshAll();
     }catch(err){ setStatus(el.studentLoginStatus, err.message, true); }
   });
+  // 🔥 ADD YOUR FUNCTION RIGHT HERE (AFTER LOGIN BLOCK)
+window.forgotPassword = function () {
+  const email = document.getElementById("loginEmailX").value;
+
+  if (!email) {
+    alert("Please enter your email first");
+    return;
+  }
+
+  auth.sendPasswordResetEmail(email)
+    .then(() => {
+      alert("✅ Reset email sent. Check your inbox.");
+    })
+    .catch((error) => {
+      console.error(error);
+      alert("❌ " + error.message);
+    });
+}
 
   el.adminLoginBtn.addEventListener('click', async ()=>{
     const email = val('adminEmailX');
@@ -3432,31 +3442,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
  async function loadLeaderboardsAll() {
-  const container = document.getElementById("studentLeaderboardList");
+  try {
+    const snapshot = await db.collection("leaderboard").get();
 
-  if (!container) return;
+    const leaderboard = snapshot.docs.map(doc => doc.data());
 
-  const snapshot = await db.collection("users")
-    .orderBy("score", "desc")
-    .limit(10)
-    .get();
+    console.log("LEADERBOARD DATA:", leaderboard);
 
-  if (snapshot.empty) {
-    container.innerHTML = "<p>No leaderboard data</p>";
-    return;
-  }
+    // sort by score (highest first)
+    leaderboard.sort((a, b) => (b.score || 0) - (a.score || 0));
 
-  container.innerHTML = snapshot.docs.map((doc, i) => {
-    const u = doc.data();
-    return `
-      <div class="mini-item">
-        <strong>#${i + 1} ${u.name || "User"}</strong><br>
-        <span class="small">Score: ${u.score || 0}</span>
+    // render
+    el.leaderboardList.innerHTML = leaderboard.map((user, index) => `
+      <div class="leaderboard-item">
+        <span>#${index + 1}</span>
+        <span>${user.name || "Student"}</span>
+        <span>${user.score || 0} pts</span>
       </div>
-    `;
-  }).join("");
-}
+    `).join('');
 
+  } catch (error) {
+    console.error("Leaderboard error:", error);
+  }
+}
 </script>
 
 <div id="videoModal" style="
