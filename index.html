@@ -1546,12 +1546,21 @@ document.querySelectorAll('.fade-in').forEach(function(el) { observer.observe(el
         <div id="questionFeedbackX" class="feedback hidden"></div>
       </div>
     </div>
-    <div class="action-bar">
-      <div class="action-bar-inner">
-        <button class="ghost-btn" id="clearBtnX" type="button">Clear</button>
-        <button class="primary-btn" id="submitBtnX" type="button">Submit Answer</button>
-        <button class="secondary-btn hidden" id="nextBtnX" type="button">Next</button>
-      </div>
+    <div class="action-bar-inner">
+
+  <button class="ghost-btn" onclick="prevQuestion()">
+    Previous
+  </button>
+
+  <button class="ghost-btn" onclick="nextQuestion()">
+    Next
+  </button>
+
+  <button class="primary-btn" onclick="submitCurrentAnswer()">
+    Submit Answer
+  </button>
+
+</div>
     </div>
   </div>
 </div>
@@ -1679,7 +1688,24 @@ studentHello: document.getElementById('studentHelloX'),
     clearBtn: document.getElementById('clearBtnX'),
     submitBtn: document.getElementById('submitBtnX'),
     nextBtn: document.getElementById('nextBtnX'),
+    prevBtn: document.getElementById('prevBtnX'),
+nextBtn: document.getElementById('nextBtnX'),
+submitBtn: document.getElementById('submitBtnX'),
+
   };
+  function nextQuestion() {
+  if (state.currentQuestionIndex < state.questions.length - 1) {
+    state.currentQuestionIndex++;
+    renderCurrentQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (state.currentQuestionIndex > 0) {
+    state.currentQuestionIndex--;
+    renderCurrentQuestion();
+  }
+}
   
   async function loadLeaderboardsAll() {
   try {
@@ -2507,7 +2533,7 @@ startTimerUI();
       document.body.style.overflow = 'hidden';
       renderQuestion();
       attachTestButtons();
-    }catch(err){ console.error(err); alert('Could not open test'); }
+    }catch(err){ console.error(err); console.error(error); }
   };
 
   function currentQuestion(){
@@ -2528,9 +2554,27 @@ startTimerUI();
     el.questionFeedback.innerHTML = html;
     el.questionFeedback.style.borderColor = kind==='correct' ? '#10b981' : kind==='wrong' ? '#ef4444' : '#e5e7eb';
   }
-  function setActionState(submitted=false){
-    el.nextBtn.classList.toggle('hidden', !submitted);
+  function setActionState(){
+
+  if(el.prevBtn){
+    el.prevBtn.style.display =
+      state.currentIndex <= 0 ? 'none' : 'inline-flex';
   }
+
+  if(el.nextBtn){
+    el.nextBtn.style.display =
+      state.currentIndex >= state.currentTest.questions.length - 1
+      ? 'none'
+      : 'inline-flex';
+  }
+
+  if(el.submitBtn){
+    el.submitBtn.style.display =
+      state.submitted ? 'none' : 'inline-flex';
+  }
+
+  
+}
   function toggleInteractivity(enabled){
     const card = document.getElementById('questionCardX');
     if(!card) return;
@@ -2577,7 +2621,11 @@ startTimerUI();
         </div>
         <div class="question-content">
           <p style="margin-top:0">${esc(q.question || q.q || '')}</p>
-          ${q.explanation ? `<div class="feedback"><strong>Explanation:</strong> ${esc(q.explanation)}</div>` : ''}
+         ${state.showExplanation ? `
+<div class="explanation">
+   ${q.explanation}
+</div>
+` : ""}
           <div class="hr"></div>
     `;
 
@@ -2759,13 +2807,11 @@ startTimerUI();
     setActionState(true);
     toggleInteractivity(false);
     setFeedback(feedback, isCorrect === true ? 'correct' : isCorrect === false ? 'wrong' : 'info');
-    state.currentResponses.push({
-      index: state.currentIndex,
-      type,
-      selected: userText,
-      correct: q.correct ?? q.answer ?? q.caseAnswer ?? q.templateAnswer ?? '',
-      isCorrect
-    });
+   state.currentResponses.push({
+   index: state.currentIndex,
+   isCorrect,
+   explanation: q.explanation || ''
+});
 
     const isLastQuestion = state.currentIndex >= (state.currentTest.questions.length - 1);
     if(isLastQuestion){
@@ -2788,26 +2834,37 @@ startTimerUI();
     clearFeedback();
     renderQuestion();
   };
+ window.nextQuestion = function(){
 
-  window.nextQuestion = function(){
-    if(!state.submitted) return;
-    state.currentIndex++;
-    if(state.currentIndex < state.currentTest.questions.length){
-      state.selectedChoice = null;
-      state.selectedMulti = [];
-      state.selectedDropdown = '';
-      state.fillAnswer = '';
-      state.manualAnswer = '';
-      state.hotspotText = '';
-      state.hotspotClick = null;
-      state.dragMap = {};
-      state.submitted = false;
-      el.nextBtn.classList.add('hidden');
-      renderQuestion();
-    } else {
-      finishTest();
-    }
-  };
+  if(!state.submitted){
+    submitCurrentAnswer();
+    return;
+  }
+
+  state.currentIndex++;
+
+  if(state.currentIndex < state.currentTest.questions.length){
+
+    state.selectedChoice = null;
+    state.selectedMulti = [];
+    state.selectedDropdown = '';
+    state.fillAnswer = '';
+    state.manualAnswer = '';
+    state.hotspotText = '';
+    state.hotspotClick = null;
+    state.dragMap = {};
+    state.submitted = false;
+
+    clearFeedback();
+    renderQuestion();
+
+  } else {
+
+    finishTest();
+
+  }
+};
+  
   async function saveAttempt(){
     console.log('🚀 saveAttempt CALLED');
     try{
@@ -2866,11 +2923,39 @@ try{
         <p><strong>Score:</strong> ${state.currentScore}/${state.currentTest.questions.length}</p>
         <div class="results-box" style="display:grid;gap:10px;margin-top:14px;">
           ${state.currentResponses.map(r=>`
-            <div class="mini-item">
-              <strong>Q${r.index + 1}</strong><br>
-              <span class="small">${r.isCorrect === null ? 'Submitted for review' : (r.isCorrect ? 'Correct' : 'Wrong')}</span>
-            </div>
-          `).join('')}
+   <div class="mini-item" style="
+      padding:18px;
+      border:1px solid #ddd;
+      border-radius:12px;
+      background:#fff;
+   ">
+
+      <strong style="font-size:20px;">
+         Q${r.index + 1}
+      </strong><br><br>
+
+      <span style="
+         font-weight:bold;
+         color:${r.isCorrect ? 'green' : 'red'};
+      ">
+         ${r.isCorrect === null
+            ? 'Submitted for review'
+            : (r.isCorrect ? '✅ Correct' : '❌ Wrong')}
+      </span>
+
+      <div style="
+         margin-top:14px;
+         padding:14px;
+         background:#f7f7f7;
+         border-radius:10px;
+         line-height:1.7;
+      ">
+         <strong>Explanation:</strong><br>
+         ${r.explanation || 'No explanation available'}
+      </div>
+
+   </div>
+`).join('')}
         </div>
       </div>
     `;
