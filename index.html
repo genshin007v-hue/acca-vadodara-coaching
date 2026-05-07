@@ -1680,6 +1680,7 @@ studentHello: document.getElementById('studentHelloX'),
     submitBtn: document.getElementById('submitBtnX'),
     nextBtn: document.getElementById('nextBtnX'),
   };
+  
   async function loadLeaderboardsAll() {
   try {
     const snapshot = await db.collection("leaderboard").get();
@@ -1689,14 +1690,15 @@ studentHello: document.getElementById('studentHelloX'),
 
     leaderboard.sort((a, b) => (b.score || 0) - (a.score || 0));
 
-    el.leaderboardList.innerHTML = leaderboard.map((user, i) => `
-      <div class="leaderboard-item">
-        <span>#${i + 1}</span>
-        <span>${user.name || "Student"}</span>
-        <span>${user.score || 0} pts</span>
-      </div>
-    `).join('');
-
+  if (el.leaderboardList) {
+  el.leaderboardList.innerHTML = leaderboard.map((user, i) => `
+    <div class="leaderboard-item">
+      <span>#${i + 1}</span>
+      <span>${user.name || "Student"}</span>
+      <span>${user.score || 0} pts</span>
+    </div>
+  `).join('');
+}
   } catch (e) {
     console.error("Leaderboard error:", e);
   }
@@ -3452,14 +3454,15 @@ document.addEventListener("DOMContentLoaded", function () {
     // sort by score (highest first)
     leaderboard.sort((a, b) => (b.score || 0) - (a.score || 0));
 
-    // render
-    el.leaderboardList.innerHTML = leaderboard.map((user, index) => `
-      <div class="leaderboard-item">
-        <span>#${index + 1}</span>
-        <span>${user.name || "Student"}</span>
-        <span>${user.score || 0} pts</span>
-      </div>
-    `).join('');
+    if (el.leaderboardList) {
+      el.leaderboardList.innerHTML = leaderboard.map((user, index) => `
+        <div class="leaderboard-item">
+          <span>#${index + 1}</span>
+          <span>${user.name || "Student"}</span>
+          <span>${user.score || 0} pts</span>
+        </div>
+      `).join('');
+    }
 
   } catch (error) {
     console.error("Leaderboard error:", error);
